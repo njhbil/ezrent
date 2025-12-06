@@ -1,7 +1,12 @@
 <?php
 // EZRENT Main Router
 
-// Start session
+// Allow static files to be served by Vercel
+if (preg_match('/\.(css|js|jpg|jpeg|png|gif|ico|svg|woff|woff2|ttf|eot)$/', $_SERVER['REQUEST_URI'] ?? '')) {
+    // Let Vercel serve static files from public/
+    return false;
+}
+
 session_start();
 
 // Load configurations
@@ -28,26 +33,23 @@ $page_file = "pages/{$request}.php";
 if (file_exists($page_file)) {
     // Include the page
     include $page_file;
-} else {
-    // Check if it's a directory (like admin/, user/)
-    if (is_dir("pages/{$request}")) {
-        $index_in_dir = "pages/{$request}/index.php";
-        if (file_exists($index_in_dir)) {
-            include $index_in_dir;
-        } else {
-            // Directory exists but no index.php
-            http_response_code(403);
-            echo "Directory access forbidden";
-        }
+} elseif (is_dir("pages/{$request}")) {
+    // If it's a directory (admin/, user/)
+    $index_in_dir = "pages/{$request}/index.php";
+    if (file_exists($index_in_dir)) {
+        include $index_in_dir;
     } else {
-        // 404 Not Found
-        http_response_code(404);
-        if (file_exists('pages/404.php')) {
-            include 'pages/404.php';
-        } else {
-            echo "<h1>404 - Page Not Found</h1>";
-            echo "<p>The page '{$request}' does not exist.</p>";
-            echo "<p><a href='/'>Go to Homepage</a></p>";
-        }
+        http_response_code(403);
+        echo "Access forbidden";
+    }
+} else {
+    // 404 Not Found
+    http_response_code(404);
+    if (file_exists('pages/404.php')) {
+        include 'pages/404.php';
+    } else {
+        echo "<h1>404 - Page Not Found</h1>";
+        echo "<p>The page '{$request}' does not exist.</p>";
+        echo "<p><a href='/'>Go to Homepage</a></p>";
     }
 }
