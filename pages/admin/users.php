@@ -1,0 +1,332 @@
+<?php
+session_start();
+// 1. Cek Login Admin
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') { 
+    header("Location: ../login.php"); 
+    exit(); 
+}
+require_once '../../php/config/database.php';
+
+// --- LOGIKA EXPORT KE EXCEL (CSV) ---
+if (isset($_GET['export']) && $_GET['export'] == 'excel') {
+    header('Content-Type: text/csv');
+    header('Content-Disposition: attachment; filename="data_pengguna_ezrent.csv"');
+    $output = fopen('php://output', 'w');
+    fputcsv($output, array('ID', 'Nama Lengkap', 'Email', 'No Telepon', 'Alamat', 'Role', 'Status', 'Bergabung'));
+    
+    $rows = $pdo->query("SELECT * FROM users ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($rows as $row) {
+        $status = $row['is_verified'] ? 'Terverifikasi' : 'Pending';
+        fputcsv($output, array(
+            $row['id'], $row['nama_lengkap'], $row['email'], 
+            $row['nomor_telepon'], $row['alamat'], $row['role'], 
+            $status, $row['created_at']
+        ));
+    }
+    fclose($output);
+    exit();
+}
+
+// --- HANDLE DELETE ---
+if(isset($_GET['delete_id'])) {
+    $id = $_GET['delete_id'];
+    if($id != $_SESSION['user_id']) { 
+        try {
+            // Cek booking aktif
+            $chk = $pdo->prepare("SELECT count(*) FROM bookings WHERE user_id = ? AND status IN ('active', 'pending')");
+            $chk->execute([$id]);
+            if($chk->fetchColumn() > 0) {
+                echo "<script>alert('Gagal: User ini memiliki pesanan yang sedang berjalan/pending.'); window.location='users.php';</script>";
+            } else {
+                $pdo->prepare("DELETE FROM users WHERE id = ?")->execute([$id]);
+                echo "<script>alert('User berhasil dihapus'); window.location='users.php';</script>";
+            }
+        } catch(Exception $e) {
+            echo "<script>alert('Error: Data tidak bisa dihapus karena terikat data lain.'); window.location='users.php';</script>";
+        }
+    }
+}
+
+// --- HANDLE VERIFY ---
+if(isset($_GET['verify_id'])) {
+    $pdo->prepare("UPDATE users SET is_verified = 1 WHERE id = ?")->execute([$_GET['verify_id']]);
+    echo "<script>window.location='users.php';</script>";
+}
+
+// --- HITUNG STATISTIK ---
+$stats = [
+    'total' => $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn(),
+    'active' => $pdo->query("SELECT COUNT(*) FROM users WHERE is_verified = 1 AND role = 'user'")->fetchColumn(),
+    'pending' => $pdo->query("SELECT COUNT(*) FROM users WHERE is_verified = 0")->fetchColumn(),
+    'new_month' => $pdo->query("SELECT COUNT(*) FROM users WHERE MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE())")->fetchColumn()
+];
+
+// --- FILTER & PENCARIAN ---
+$search = $_GET['search'] ?? '';
+$filter_status = $_GET['status'] ?? '';
+
+$sql = "SELECT u.*, (SELECT COUNT(*) FROM bookings b WHERE b.user_id = u.id) as total_orders 
+        FROM users u WHERE 1=1";
+$params = [];
+
+if (!empty($search)) {
+    $sql .= " AND (nama_lengkap LIKE ? OR email LIKE ?)";
+    $params[] = "%$search%";
+    $params[] = "%$search%";
+}
+
+if ($filter_status === 'verified') {
+    $sql .= " AND is_verified = 1";
+} elseif ($filter_status === 'pending') {
+    $sql .= " AND is_verified = 0";
+}
+
+$sql .= " ORDER BY created_at DESC";
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+$users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// --- AKTIVITAS TERBARU (GABUNGAN USER & BOOKING) ---
+$activity_sql = "
+    SELECT 'booking' as type, b.created_at, u.nama_lengkap, 'melakukan pemesanan kendaraan' as action
+    FROM bookings b JOIN users u ON b.user_id = u.id
+    UNION ALL
+    SELECT 'register' as type, created_at, nama_lengkap, 'bergabung dengan EzRent' as action
+    FROM users
+    ORDER BY created_at DESC LIMIT 6
+";
+$activities = $pdo->query($activity_sql)->fetchAll(PDO::FETCH_ASSOC);
+
+$page_title = "Manajemen Pengguna";
+include 'header.php';
+?>
+
+<style>
+    .card-stat { border:none; border-radius:12px; transition:0.3s; background: white; box-shadow: 0 2px 15px rgba(0,0,0,0.05); }
+    .card-stat:hover { transform:translateY(-5px); box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+    .avatar-circle { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; }
+    .table-custom thead th { background-color: #f8f9fa; border-bottom: 2px solid #e9ecef; font-weight: 600; color: #495057; font-size: 0.9rem; }
+    .activity-item { padding-left: 15px; border-left: 2px solid #e9ecef; position: relative; padding-bottom: 20px; }
+    .activity-item::before { content: ''; width: 10px; height: 10px; background: #3b82f6; border-radius: 50%; position: absolute; left: -6px; top: 5px; }
+    .activity-item.register::before { background: #10b981; }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-0">Manajemen Pengguna</h2>
+        <p class="text-muted mb-0">Kelola data pelanggan dan hak akses.</p>
+    </div>
+    <div>
+        <button class="btn btn-primary" onclick="alert('User mendaftar melalui halaman Register publik.')">
+            <i class="fas fa-plus me-2"></i> Tambah User
+        </button>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card card-stat border-start border-4 border-primary p-3">
+            <div class="text-muted small mb-1">Total Pengguna</div>
+            <div class="d-flex align-items-center justify-content-between">
+                <h2 class="mb-0 fw-bold"><?php echo $stats['total']; ?></h2>
+                <div class="text-success small fw-bold">
+                    <i class="fas fa-arrow-up"></i> <?php echo $stats['new_month']; ?> bulan ini
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stat border-start border-4 border-success p-3">
+            <div class="text-muted small mb-1">Pengguna Aktif</div>
+            <div class="d-flex align-items-center justify-content-between">
+                <h2 class="mb-0 fw-bold text-success"><?php echo $stats['active']; ?></h2>
+                <i class="fas fa-user-check fa-2x text-success opacity-25"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stat border-start border-4 border-warning p-3">
+            <div class="text-muted small mb-1">Menunggu Verifikasi</div>
+            <div class="d-flex align-items-center justify-content-between">
+                <h2 class="mb-0 fw-bold text-warning"><?php echo $stats['pending']; ?></h2>
+                <small class="text-warning">Perlu tindakan</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stat border-start border-4 border-danger p-3">
+            <div class="text-muted small mb-1">Admin Sistem</div>
+            <div class="d-flex align-items-center justify-content-between">
+                <h2 class="mb-0 fw-bold text-danger">1</h2>
+                <i class="fas fa-shield-alt fa-2x text-danger opacity-25"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <h5 class="mb-0 fw-bold">Daftar Semua Pengguna</h5>
+                
+                <form class="d-flex gap-2 flex-grow-1 justify-content-end" method="GET">
+                    <select name="status" class="form-select form-select-sm" style="max-width: 150px;" onchange="this.form.submit()">
+                        <option value="">Semua Status</option>
+                        <option value="verified" <?php echo $filter_status=='verified'?'selected':''; ?>>Aktif / Verified</option>
+                        <option value="pending" <?php echo $filter_status=='pending'?'selected':''; ?>>Pending</option>
+                    </select>
+                    <div class="input-group input-group-sm" style="max-width: 250px;">
+                        <input type="text" name="search" class="form-control" placeholder="Cari nama/email..." value="<?php echo htmlspecialchars($search); ?>">
+                        <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button>
+                    </div>
+                </form>
+                
+                <a href="?export=excel" class="btn btn-success btn-sm text-white">
+                    <i class="fas fa-file-excel me-1"></i> Export
+                </a>
+            </div>
+            
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-custom align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-3">Pengguna</th>
+                                <th>Email & Telepon</th>
+                                <th class="text-center">Total Order</th>
+                                <th>Status</th>
+                                <th class="text-end pe-3">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if(empty($users)): ?>
+                                <tr><td colspan="5" class="text-center py-5 text-muted">Tidak ada data pengguna ditemukan.</td></tr>
+                            <?php else: ?>
+                                <?php foreach($users as $u): 
+                                    // Generate warna avatar random
+                                    $colors = ['#0d6efd', '#6610f2', '#6f42c1', '#d63384', '#dc3545', '#fd7e14', '#198754', '#20c997'];
+                                    $bg_color = $colors[$u['id'] % count($colors)];
+                                ?>
+                                <tr>
+                                    <td class="ps-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle me-3" style="background-color: <?php echo $bg_color; ?>">
+                                                <?php echo strtoupper(substr($u['nama_lengkap'], 0, 1)); ?>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold text-dark"><?php echo htmlspecialchars($u['nama_lengkap']); ?></div>
+                                                <div class="small text-muted">ID: USR<?php echo str_pad($u['id'], 3, '0', STR_PAD_LEFT); ?></div>
+                                                <div class="small text-muted"><i class="far fa-calendar-alt me-1"></i> <?php echo date('d M Y', strtotime($u['created_at'])); ?></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-dark mb-1"><?php echo htmlspecialchars($u['email']); ?></div>
+                                        <div class="small text-muted"><i class="fas fa-phone-alt me-1"></i> <?php echo htmlspecialchars($u['nomor_telepon'] ?? '-'); ?></div>
+                                    </td>
+                                    <td class="text-center">
+                                        <?php if($u['total_orders'] > 0): ?>
+                                            <span class="badge bg-primary rounded-pill px-3"><?php echo $u['total_orders']; ?> x</span>
+                                        <?php else: ?>
+                                            <span class="text-muted small">-</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <?php if($u['role'] == 'admin'): ?>
+                                            <span class="badge bg-dark rounded-pill px-3 py-2">ADMIN</span>
+                                        <?php elseif($u['is_verified']): ?>
+                                            <span class="badge bg-success rounded-pill px-3 py-2">Aktif</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-warning text-dark rounded-pill px-3 py-2">Pending</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <div class="btn-group">
+                                            <?php if(!$u['is_verified']): ?>
+                                                <a href="?verify_id=<?php echo $u['id']; ?>" class="btn btn-sm btn-outline-success" title="Verifikasi Akun" onclick="return confirm('Verifikasi user ini?')">
+                                                    <i class="fas fa-check"></i>
+                                                </a>
+                                            <?php endif; ?>
+                                            
+                                            <button class="btn btn-sm btn-outline-primary" title="Edit Detail" onclick="alert('Fitur edit user detail belum tersedia')">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+
+                                            <?php if($u['role'] != 'admin'): ?>
+                                                <a href="?delete_id=<?php echo $u['id']; ?>" class="btn btn-sm btn-outline-danger" title="Hapus User" onclick="return confirm('Yakin hapus pengguna ini? Data pesanan mungkin hilang.')">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer bg-white py-3">
+                <small class="text-muted">Menampilkan <?php echo count($users); ?> data terbaru.</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h6 class="mb-0 fw-bold">Aktivitas Pengguna Terbaru</h6>
+            </div>
+            <div class="card-body">
+                <div class="activity-feed">
+                    <?php if(empty($activities)): ?>
+                        <p class="text-muted text-center small">Belum ada aktivitas.</p>
+                    <?php else: ?>
+                        <?php foreach($activities as $act): ?>
+                        <div class="activity-item <?php echo $act['type']; ?>">
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <span class="fw-bold text-dark small"><?php echo htmlspecialchars($act['nama_lengkap']); ?></span>
+                                <?php if($act['type'] == 'register'): ?>
+                                    <span class="badge bg-success" style="font-size: 0.6rem;">BARU</span>
+                                <?php else: ?>
+                                    <span class="badge bg-primary" style="font-size: 0.6rem;">ORDER</span>
+                                <?php endif; ?>
+                            </div>
+                            <p class="text-muted small mb-1" style="line-height: 1.3;">
+                                Telah <?php echo $act['action']; ?>.
+                            </p>
+                            <small class="text-secondary" style="font-size: 0.75rem;">
+                                <i class="far fa-clock me-1"></i> 
+                                <?php 
+                                    $time = strtotime($act['created_at']);
+                                    $diff = time() - $time;
+                                    if ($diff < 60) echo "Baru saja";
+                                    else if ($diff < 3600) echo floor($diff/60) . " menit lalu";
+                                    else if ($diff < 86400) echo floor($diff/3600) . " jam lalu";
+                                    else echo date('d M Y', $time);
+                                ?>
+                            </small>
+                        </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+
+        <div class="card bg-primary text-white mt-4 border-0 shadow-sm" style="background: linear-gradient(45deg, #2563eb, #1d4ed8);">
+            <div class="card-body p-4">
+                <h5 class="fw-bold"><i class="fas fa-info-circle me-2"></i> Info Admin</h5>
+                <p class="small opacity-75 mb-0">
+                    Pengguna dengan status <strong>Pending</strong> tidak bisa melakukan pemesanan sampai Anda memverifikasinya (klik tombol Checklist Hijau).
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+        </div>
+    </main>
+<script src="../../assets/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
