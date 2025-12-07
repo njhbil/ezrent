@@ -73,11 +73,12 @@ $page_title = "Login - EzRent";
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title><?php echo $page_title; ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="../assets/css/responsive.css" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -535,15 +536,7 @@ $page_title = "Login - EzRent";
 </head>
 <body>
 
-<!-- Header -->
-<header class="login-header" id="header">
-    <a href="index.php" class="back-link">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-        </svg>
-        <span>Kembali ke Beranda</span>
-    </a>
-</header>
+<?php include '../php/includes/header.php'; ?>
 
 <!-- Mobile Logo Header -->
 <div class="mobile-logo-header">

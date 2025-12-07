@@ -5,7 +5,7 @@ $page_title = "Tentang Kami - EzRent";
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title><?php echo $page_title; ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="../assets/css/bootstrap.min.css" rel="stylesheet">
@@ -1309,26 +1309,7 @@ $page_title = "Tentang Kami - EzRent";
 </head>
 <body>
 
-<!-- Header -->
-<header class="site-header">
-    <div class="header-container">
-        <nav class="navbar">
-            <a href="index.php" class="logo">
-                <span class="logo-ez">Ez</span><span class="logo-rent">Rent</span><span class="logo-accent">.</span>
-            </a>
-            <ul class="nav-links">
-                <li><a href="index.php">Beranda</a></li>
-                <li><a href="vehicles.php">Kendaraan</a></li>
-                <li><a href="about.php" class="active">Tentang Kami</a></li>
-                <li><a href="contact.php">Kontak</a></li>
-            </ul>
-            <div class="auth-buttons">
-                <a href="login.php" class="btn-login">Login</a>
-                <a href="register.php" class="btn-register">Daftar</a>
-            </div>
-        </nav>
-    </div>
-</header>
+<?php include '../php/includes/header.php'; ?>
 
 <!-- Hero -->
 <section class="hero">

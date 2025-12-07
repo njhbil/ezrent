@@ -1,0 +1,140 @@
+/* Responsive overrides for mobile devices (max-width: 768px)
+   These rules only apply on small screens and should not affect desktop layouts.
+*/
+
+@media (max-width: 768px) {
+  :root {
+    --container-padding: 16px;
+  }
+
+  /* Page container padding */
+  .container, .header-container, .filter-container, .vehicles-container {
+    padding-left: var(--container-padding);
+    padding-right: var(--container-padding);
+  }
+
+  /* Header adjustments */
+  header, .site-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1100;
+    padding: 0.5rem 0;
+  }
+  .logo, .logo-ez, .logo-rent { font-size: 1.25rem !important; }
+
+  /* Nav becomes collapsed (header include already toggles). Ensure auth buttons stack */
+  .auth-buttons { gap: 0.6rem; }
+  .btn-login, .btn-register { font-size: 0.82rem; padding: 0.4rem 0.9rem; }
+  /* Mobile nav auth links styling inside collapsed nav (login only) */
+  .nav-links .nav-auth-item { display: block; }
+  .nav-links .nav-auth-item a {
+    display: block;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+    text-align: center;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.9rem;
+  }
+
+  /* Hero: reduce height and padding, scale down text */
+  .hero { min-height: 48vh !important; padding: 3.5rem 0 2rem !important; }
+  .hero-content { padding: 4rem 1rem !important; }
+  .hero h1 { font-size: 1.6rem !important; }
+  .hero p { font-size: 0.95rem !important; max-width: 100% !important; }
+
+  /* Filter/Search adjustments */
+  .filter-section { padding: 1.25rem var(--container-padding) !important; }
+  .filter-buttons { justify-content: center; gap: 0.5rem; }
+  .filter-btn { padding: 0.5rem 0.9rem; font-size: 0.85rem; }
+  .search-box { max-width: 100%; margin-top: 1rem; }
+
+  /* Vehicles grid -> single column for narrow screens */
+  .vehicles-grid { grid-template-columns: 1fr !important; gap: 1rem !important; }
+  .vehicle-card { border-radius: 10px; overflow: visible; }
+  .vehicle-image { aspect-ratio: auto; height: 220px; }
+  .vehicle-image img { height: 100%; width: 100%; object-fit: cover; }
+  .vehicle-info { padding: 1rem; }
+  .vehicle-name { font-size: 1.05rem; }
+  .vehicle-model, .spec-item { font-size: 0.85rem; }
+
+  /* Buttons full width where appropriate */
+  .btn-book { display: block; width: 100%; text-align: center; padding: 0.65rem 1rem; }
+
+  /* Search & filters stacking */
+  .filter-header { text-align: center; }
+
+  /* Login/Register layout: stack visual and form vertically */
+  .login-wrapper, .register-wrapper {
+    display: block !important;
+  }
+  .login-visual, .register-visual {
+    width: 100% !important;
+    position: relative !important;
+    height: 220px !important;
+  }
+  .login-form-side, .register-form-side {
+    width: 100% !important;
+    margin-left: 0 !important;
+    padding: 2rem !important;
+  }
+
+  /* Forms & inputs stretch */
+  .form-container, .form-wrapper { max-width: 100% !important; }
+  .form-input, input[type="text"], input[type="email"], input[type="password"], select, textarea {
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  /* Footer stacking is handled in footer include, ensure spacing */
+  .site-footer { padding-top: 2rem !important; }
+
+  /* Reduce heavy box-shadows and hover transforms on mobile for performance */
+  .vehicle-card:hover { transform: none !important; box-shadow: none !important; }
+  .btn-book:hover { transform: none !important; }
+
+  /* Ensure particle canvas doesn't exceed hero on small screens */
+  .particle-canvas { height: 48vh !important; }
+
+  /* Misc small-screen tweaks */
+  .category-title { font-size: 1rem !important; }
+  .category-count { display: block; margin-top: 0.25rem; }
+
+  /* Header layout: hamburger left, logo centered, login right on mobile across pages */
+  header, .site-header { padding-top: calc(env(safe-area-inset-top) + 8px) !important; }
+  .navbar { position: relative; align-items: center; }
+  .mobile-menu-btn {
+     order: 1;
+     position: relative;
+     z-index: 1200;
+     margin-left: 0.25rem;
+     /* make hamburger visually flush left (avoid container padding effect) */
+     left: 8px;
+  }
+  .logo {
+    order: 2;
+     position: absolute !important;
+     /* Use viewport centering to avoid offset when right/left controls vary */
+     left: 50vw !important;
+     transform: translateX(-50%) !important;
+    margin: 0 auto !important;
+    font-size: 1.15rem !important;
+  }
+  .auth-buttons {
+    order: 3;
+    position: relative;
+    margin-right: 0.5rem;
+    display: flex !important;
+    gap: 0.5rem;
+  }
+  /* push auth buttons to the far right */
+  .auth-buttons { margin-left: auto !important; }
+  /* Make sure nav links are hidden by default (collapsed) */
+  .nav-links { display: none !important; }
+  .nav-links.active { display: flex !important; flex-direction: column !important; }
+}

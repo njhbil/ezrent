@@ -10,7 +10,7 @@ $base_path = '../';
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title><?php echo isset($page_title) ? $page_title : 'Dashboard User - EzRent'; ?></title>
     <link href="../../assets/css/bootstrap.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -56,6 +56,10 @@ $base_path = '../';
             background: #000;
             position: sticky;
         }
+
+        /* Safe-area padding for notch devices */
+        body { padding-top: env(safe-area-inset-top); }
+        header { padding-top: env(safe-area-inset-top); }
 
         .navbar {
             display: flex;

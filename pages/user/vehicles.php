@@ -35,7 +35,7 @@ include 'header.php';
     /* Hero Section */
     .hero {
         position: relative;
-        min-height: 90vh;
+        min-height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;

@@ -89,14 +89,26 @@ include 'header.php';
         z-index: 10;
         display: flex;
         align-items: center;
-        justify-content: flex-start;
+        justify-content: flex-start; /* desktop: left-aligned */
         padding-left: 10%;
+        padding-right: 1.25rem;
     }
-    
+
     .hero-text {
-        text-align: left;
+        text-align: left; /* desktop: left text alignment */
         color: white;
-        max-width: 600px;
+        max-width: 720px;
+        margin: 0;
+    }
+
+    /* Mobile: center hero content and text */
+    @media (max-width: 768px) {
+        .hero-content {
+            justify-content: center !important;
+            padding-left: 1.25rem !important;
+            padding-right: 1.25rem !important;
+        }
+        .hero-text { text-align: center !important; }
     }
     
     .hero-welcome {

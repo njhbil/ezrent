@@ -22,10 +22,11 @@ $mobils = $stmt_mobil->fetchAll(PDO::FETCH_ASSOC);
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title><?php echo $page_title; ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="../assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../assets/css/responsive.css" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; color: #000; }
@@ -133,7 +134,7 @@ $mobils = $stmt_mobil->fetchAll(PDO::FETCH_ASSOC);
         /* Hero */
         .hero {
             position: relative;
-            min-height: 80vh;
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -149,6 +150,16 @@ $mobils = $stmt_mobil->fetchAll(PDO::FETCH_ASSOC);
             background: url('https://images.unsplash.com/photo-1583121274602-3e2820c69888?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;
             z-index: 1;
             animation: heroZoom 20s ease-in-out infinite alternate;
+        }
+        /* Particle Canvas (hero animated dots) */
+        .particle-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+            pointer-events: none;
         }
         @keyframes heroZoom {
             0% { transform: scale(1); }
@@ -625,35 +636,7 @@ $mobils = $stmt_mobil->fetchAll(PDO::FETCH_ASSOC);
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="site-header">
-        <div class="header-container">
-            <nav class="navbar">
-                <a href="index.php" class="logo">
-                    <span class="logo-ez">Ez</span><span class="logo-rent">Rent</span><span class="logo-accent">.</span>
-                </a>
-                
-                <ul class="nav-links">
-                    <li><a href="index.php">Beranda</a></li>
-                    <li><a href="vehicles.php" class="active">Kendaraan</a></li>
-                    <li><a href="about.php">Tentang</a></li>
-                    <li><a href="contact.php">Kontak</a></li>
-                </ul>
-                
-                <div class="auth-buttons">
-                    <?php if ($is_logged_in): ?>
-                    <a href="user/dashboard.php" class="btn-login">Dashboard</a>
-                    <a href="../php/auth/logout.php" class="btn-register">Logout</a>
-                    <?php else: ?>
-                    <a href="login.php" class="btn-login">Masuk</a>
-                    <a href="register.php" class="btn-register">Daftar</a>
-                    <?php endif; ?>
-                </div>
-                
-                <button class="mobile-menu-btn">☰</button>
-            </nav>
-        </div>
-    </header>
+    <?php include '../php/includes/header.php'; ?>
     
     <!-- Scroll Progress -->
     <div class="scroll-progress">
@@ -669,6 +652,7 @@ $mobils = $stmt_mobil->fetchAll(PDO::FETCH_ASSOC);
             <p>Koleksi kendaraan EzRent berkualitas premium dengan harga terbaik. Semua kendaraan terawat dengan standar tertinggi.</p>
         </div>
     </section>
+    <canvas id="particleCanvas" class="particle-canvas"></canvas>
     
     <!-- Filter Section -->
     <section class="filter-section">
@@ -754,6 +738,11 @@ $mobils = $stmt_mobil->fetchAll(PDO::FETCH_ASSOC);
                                 <?php echo $mobil['status'] === 'tersedia' ? 'Tersedia' : 'Disewa'; ?>
                             </span>
                         </div>
+                        <div class="vehicle-dots" aria-hidden="true">
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+    </div>
                         <div class="vehicle-info">
                             <h4 class="vehicle-name"><?php echo htmlspecialchars($mobil['nama']); ?></h4>
                             <p class="vehicle-model"><?php echo htmlspecialchars($mobil['model']); ?></p>
@@ -866,6 +855,99 @@ $mobils = $stmt_mobil->fetchAll(PDO::FETCH_ASSOC);
                 });
             });
         });
+    </script>
+    <script>
+        (function() {
+            const canvas = document.getElementById('particleCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            let particles = [];
+            let w = 0, h = 0;
+
+            function resize() {
+                const dpr = window.devicePixelRatio || 1;
+                w = canvas.clientWidth || window.innerWidth;
+                h = canvas.clientHeight || Math.max(window.innerHeight * 0.8, 400);
+                canvas.width = Math.floor(w * dpr);
+                canvas.height = Math.floor(h * dpr);
+                canvas.style.width = w + 'px';
+                canvas.style.height = h + 'px';
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+
+            function rand(min, max) { return Math.random() * (max - min) + min; }
+
+            function createParticles(count) {
+                particles = [];
+                for (let i = 0; i < count; i++) {
+                    particles.push({
+                        x: rand(0, w),
+                        y: rand(0, h),
+                        vx: rand(-0.15, 0.15),
+                        vy: rand(-0.15, 0.15),
+                        r: rand(1.2, 3.2),
+                        alpha: rand(0.4, 0.95),
+                        drift: rand(0.001, 0.01)
+                    });
+                }
+            }
+
+            function update() {
+                for (let p of particles) {
+                    p.x += p.vx;
+                    p.y += p.vy + Math.sin(Date.now() * p.drift) * 0.15;
+
+                    if (p.x < -10) p.x = w + 10;
+                    if (p.x > w + 10) p.x = -10;
+                    if (p.y < -10) p.y = h + 10;
+                    if (p.y > h + 10) p.y = -10;
+                }
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, w, h);
+
+                for (let p of particles) {
+                    ctx.beginPath();
+                    ctx.fillStyle = `rgba(213,20,20,${p.alpha})`;
+                    ctx.shadowColor = 'rgba(213,20,20,0.6)';
+                    ctx.shadowBlur = 6;
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+            }
+
+            let rafId;
+            function loop() {
+                update();
+                draw();
+                rafId = requestAnimationFrame(loop);
+            }
+
+            function start() {
+                resize();
+                const base = Math.max(28, Math.floor((w * h) / 30000));
+                const count = window.innerWidth < 768 ? Math.max(18, Math.floor(base / 2)) : base;
+                createParticles(count);
+                if (rafId) cancelAnimationFrame(rafId);
+                loop();
+            }
+
+            window.addEventListener('resize', function() {
+                // debounce
+                clearTimeout(window.__particle_resize);
+                window.__particle_resize = setTimeout(start, 150);
+            });
+
+            // Start when DOM ready
+            if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                start();
+            } else {
+                document.addEventListener('DOMContentLoaded', start);
+            }
+        })();
     </script>
 </body>
 </html>

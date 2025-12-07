@@ -12,7 +12,7 @@ if (strpos($_SERVER['PHP_SELF'], '/php/pages/') !== false) {
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title><?php echo isset($page_title) ? $page_title : 'EzRent - Sewa Kendaraan Mudah'; ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,6 +38,10 @@ if (strpos($_SERVER['PHP_SELF'], '/php/pages/') !== false) {
             flex-direction: column;
             -webkit-font-smoothing: antialiased;
         }
+
+        /* Respect device safe area (notch) */
+        body { padding-top: env(safe-area-inset-top); }
+        header { padding-top: env(safe-area-inset-top); }
 
         .container {
             max-width: 1200px;
@@ -103,9 +107,12 @@ if (strpos($_SERVER['PHP_SELF'], '/php/pages/') !== false) {
         .nav-links {
             display: flex;
             list-style: none;
-            gap: 2.5rem;
+            gap: 2rem;
             align-items: center;
         }
+
+        /* Hide the mobile-only auth link on desktop — shown only in the collapsed mobile menu */
+        .nav-auth-item { display: none; }
 
         .nav-links a {
             color: rgba(255, 255, 255, 0.8);
@@ -222,18 +229,10 @@ if (strpos($_SERVER['PHP_SELF'], '/php/pages/') !== false) {
                 padding: 0.75rem 0;
             }
 
-            .auth-buttons {
-                flex-direction: column;
-                width: 100%;
-                padding: 1rem 0;
-                gap: 1rem;
-            }
-
-            .btn-login,
-            .btn-register {
-                width: 100%;
-                text-align: center;
-            }
+            /* On mobile: show a compact login button in the header (hide register) */
+            .auth-buttons { display: flex !important; gap: 0.5rem; align-items: center; }
+            .auth-buttons .btn-login { display: inline-block; padding: 0.35rem 0.8rem; font-size: 0.82rem; }
+            .auth-buttons .btn-register { display: none !important; }
 
             .logo {
                 font-size: 1.5rem;
@@ -247,11 +246,11 @@ if (strpos($_SERVER['PHP_SELF'], '/php/pages/') !== false) {
     <header>
         <div class="container">
             <nav class="navbar">
+                <button class="mobile-menu-btn" onclick="toggleMenu()">☰</button>
+
                 <a href="<?php echo $base_path; ?>index.php" class="logo">
                     <span class="logo-ez">Ez</span><span class="logo-rent">Rent</span><span class="logo-accent">.</span>
                 </a>
-
-                <button class="mobile-menu-btn" onclick="toggleMenu()">☰</button>
 
                 <ul class="nav-links" id="navLinks">
                     <li><a href="<?php echo $base_path; ?>index.php">Beranda</a></li>

@@ -77,7 +77,7 @@ include '../php/includes/header.php';
                 <h2 style="font-size: clamp(2rem, 4vw, 3rem); font-weight: 500; color: #000; margin-bottom: 1rem; letter-spacing: -0.02em;">Mengapa Memilih EzRent?</h2>
                 <p style="font-size: 1.1rem; color: #6b7280; font-weight: 300;">Pengalaman sewa kendaraan yang tak tertandingi</p>
             </div>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
+            <div class="features-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
                 <div style="text-align: center; padding: 3rem 2rem; background: #fff; border: 1px solid #e5e7eb; transition: all 0.3s ease;">
                     <div style="width: 70px; height: 70px; margin: 0 auto 1.5rem; display: flex; align-items: center; justify-content: center; border: 2px solid #000; border-radius: 50%;">
                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">

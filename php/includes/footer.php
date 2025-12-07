@@ -261,5 +261,21 @@ if (strpos($_SERVER['PHP_SELF'], '/php/pages/') !== false) {
         }
     }
     </style>
+    <script>
+    (function() {
+        // Inject responsive CSS for small devices. Uses $base_path_footer set earlier.
+        try {
+            if (document.getElementById('ezrent-responsive-css')) return;
+            var l = document.createElement('link');
+            l.rel = 'stylesheet';
+            l.href = '<?php echo $base_path_footer; ?>assets/css/responsive.css';
+            l.id = 'ezrent-responsive-css';
+            document.head.appendChild(l);
+        } catch (e) {
+            // fail silently
+            console && console.warn && console.warn('Failed to load responsive CSS', e);
+        }
+    })();
+    </script>
 </body>
 </html>
