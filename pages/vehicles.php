@@ -134,7 +134,7 @@ $mobils = $stmt_mobil->fetchAll(PDO::FETCH_ASSOC);
         /* Hero */
         .hero {
             position: relative;
-            min-height: 100vh;
+            height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -635,7 +635,7 @@ $mobils = $stmt_mobil->fetchAll(PDO::FETCH_ASSOC);
         }
     </style>
 </head>
-<body>
+<body class="page-vehicles">
     <?php include '../php/includes/header.php'; ?>
     
     <!-- Scroll Progress -->

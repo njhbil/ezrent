@@ -518,7 +518,8 @@ include 'header.php';
     }
 
     @media (max-width: 768px) {
-        .hero h1 { font-size: 1.75rem; }
+        .hero h1 { font-size: 2.4rem; line-height: 1.15; }
+        .hero p { font-size: 1.15rem; }
         .vehicles-grid { grid-template-columns: 1fr; }
         .filter-buttons { gap: 0.5rem; }
         .filter-btn { padding: 0.6rem 1.25rem; font-size: 0.8rem; }

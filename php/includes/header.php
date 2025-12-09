@@ -111,9 +111,6 @@ if (strpos($_SERVER['PHP_SELF'], '/php/pages/') !== false) {
             align-items: center;
         }
 
-        /* Hide the mobile-only auth link on desktop — shown only in the collapsed mobile menu */
-        .nav-auth-item { display: none; }
-
         .nav-links a {
             color: rgba(255, 255, 255, 0.8);
             text-decoration: none;
@@ -206,6 +203,11 @@ if (strpos($_SERVER['PHP_SELF'], '/php/pages/') !== false) {
         @media (max-width: 768px) {
             .mobile-menu-btn {
                 display: block;
+            }
+
+            header {
+                background: #0a0a0a !important;
+                box-shadow: none !important;
             }
 
             .nav-links {

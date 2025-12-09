@@ -1,3 +1,35 @@
+<?php include '../php/includes/header.php'; ?>
+
+<!-- Mobile Logo Header -->
+<div class="mobile-logo-header">
+    <div class="visual-logo">
+        <div class="visual-logo-text">
+            <span class="ez">Ez</span><span class="rent">Rent</span><span class="dot">.</span>
+        </div>
+        <div class="visual-tagline">Rental Kendaraan</div>
+    </div>
+</div>
+
+<style>
+@media (max-width: 768px) {
+    .register-header {
+        width: 100%;
+        position: relative;
+        background: #0a0a0a !important;
+    }
+    .mobile-logo-header {
+        background: #0a0a0a !important;
+        margin-top: 3.5rem !important;
+    }
+    .mobile-logo-header .visual-logo-text {
+        margin-top: 0.5rem !important;
+    }
+    header {
+        background: #0a0a0a !important;
+        box-shadow: none !important;
+    }
+}
+</style>
 <?php 
 $page_title = "Daftar Akun - EzRent";
 
@@ -120,6 +152,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             justify-content: flex-end;
             align-items: center;
             background: transparent;
+        }
+        @media (max-width: 768px) {
+            .register-header { display: none !important; }
+            .register-visual .visual-logo, .register-visual .visual-tagline { display: none !important; }
         }
         .back-link {
             color: #6b7280;
@@ -627,7 +663,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         /* Mobile */
         @media (max-width: 1024px) {
             .register-visual {
-                display: none;
+                display: none !important;
+            }
+            .register-visual .visual-logo,
+            .register-visual .visual-tagline {
+                display: none !important;
             }
             .mobile-logo-header {
                 display: block;
@@ -683,15 +723,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </a>
 </header>
 
-<!-- Mobile Logo Header -->
-<div class="mobile-logo-header">
-    <div class="visual-logo">
-        <div class="visual-logo-text">
-            <span class="ez">Ez</span><span class="rent">Rent</span><span class="dot">.</span>
-        </div>
-        <div class="visual-tagline">Rental Kendaraan</div>
-    </div>
-</div>
 
 <div class="register-wrapper">
     <!-- Left Side - Visual (Fixed) -->

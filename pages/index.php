@@ -287,6 +287,34 @@ include '../php/includes/header.php';
             .vehicle-card:nth-child(3) { transition-delay: 0.3s; }
             .vehicle-card:nth-child(4) { transition-delay: 0.4s; }
         </style>
+        <style>
+        @media (max-width: 768px) {
+            .vehicles-grid {
+                grid-template-columns: 1fr !important;
+                gap: 1.25rem !important;
+                justify-items: center;
+            }
+            .vehicle-card {
+                width: 92vw !important;
+                max-width: 400px !important;
+                margin: 0 auto 1.25rem auto !important;
+                border-radius: 12px !important;
+                padding: 0 !important;
+                min-width: 0 !important;
+                box-sizing: border-box;
+                background: #181818;
+            }
+            .vehicle-card .card-img {
+                border-radius: 12px 12px 0 0 !important;
+                max-height: 170px;
+                object-fit: cover;
+            }
+            .vehicle-card > div:last-child {
+                padding: 1.1rem 1rem 1.2rem 1rem !important;
+            }
+        }
+        
+        </style>
         <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 2;">
             <div class="section-title" style="text-align: center; margin-bottom: 4rem;">
                 <h2 style="font-size: clamp(2rem, 4vw, 3rem); font-weight: 500; color: #fff; margin-bottom: 1rem; letter-spacing: -0.02em;">Koleksi Kendaraan Kami</h2>

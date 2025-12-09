@@ -187,6 +187,19 @@ $page_title = "Login - EzRent";
             text-transform: uppercase;
             margin-top: 1rem;
         }
+            /* Mobile: Give hero more top padding so it doesn't touch navbar */
+            @media (max-width: 768px) {
+                            .mobile-logo-header {
+                                margin-top: 3.5rem !important;
+                            }
+                            .mobile-logo-header .visual-logo-text {
+                                margin-top: 0.5rem !important;
+                            }
+                .visual-content {
+                    padding-top: 6.5rem !important;
+                    padding-bottom: 2.5rem !important;
+                }
+            }
         
         /* Decorative elements */
         .decor-circle {
@@ -503,7 +516,10 @@ $page_title = "Login - EzRent";
             .login-header {
                 width: 100%;
                 position: relative;
-                background: #0a0a0a;
+                background: #0a0a0a !important;
+            }
+            .mobile-logo-header {
+                background: #0a0a0a !important;
             }
             .logo-ez { color: #fff; }
             .back-link { color: rgba(255,255,255,0.7); }

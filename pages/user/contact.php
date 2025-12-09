@@ -70,8 +70,284 @@ try {
 ?>
 
 <style>
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
+/* Mobile Responsive Fixes */
+@media (max-width: 768px) {
+    /* Hero Section Mobile */
+    .hero {
+        min-height: 80vh;
+        padding: 0 1rem;
+    }
+    
+    .hero h1 {
+        font-size: 2rem;
+        line-height: 1.2;
+        margin-bottom: 1rem;
+    }
+    
+    .hero p {
+        font-size: 1rem;
+        padding: 0 1rem;
+    }
+    
+    .hero-badge {
+        font-size: 0.7rem;
+        padding: 0.4rem 1rem;
+    }
+    
+    /* Disable heavy animations on mobile */
+    .hero-bg {
+        animation: none;
+        transform: scale(1.1);
+    }
+    
+    /* Contact Section Mobile */
+    .contact-section {
+        padding: 3rem 1rem;
+    }
+    
+    .contact-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        margin: 0 0.5rem;
+    }
+    
+    .contact-card {
+        padding: 1.5rem 1rem;
+        transform: none !important; /* Disable 3D effect on mobile */
+    }
+    
+    .contact-card:hover {
+        transform: translateY(-5px) !important;
+    }
+    
+    .contact-card .card-icon {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 1rem;
+    }
+    
+    /* Form Section Mobile */
+    .form-section {
+        padding: 3rem 1rem;
+    }
+    
+    .form-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        padding: 0 1rem;
+    }
+    
+    .form-card {
+        padding: 1.5rem;
+        margin: 0 0.5rem;
+    }
+    
+    .form-info h2,
+    .form-info p {
+        text-align: center;
+    }
+    
+    .info-list {
+        gap: 1rem;
+    }
+    
+    .info-item {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 0.5rem;
+    }
+    
+    .info-item .icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    /* Form Elements Mobile */
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 0.8rem 1rem;
+        font-size: 16px; /* Prevent iOS zoom on focus */
+    }
+    
+    textarea {
+        min-height: 120px;
+    }
+    
+    .btn-submit {
+        padding: 1rem 1.5rem;
+    }
+    
+    /* Messages Section Mobile */
+    .messages-section {
+        padding: 3rem 1rem;
+    }
+    
+    .message-item {
+        padding: 1rem;
+        margin: 0 0.5rem;
+    }
+    
+    .message-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .message-status {
+        align-self: flex-start;
+    }
+    
+    /* Section Headers Mobile */
+    .section-header {
+        margin-bottom: 2rem;
+        padding: 0 1rem;
+    }
+    
+    .section-header h2 {
+        font-size: 1.75rem;
+        line-height: 1.3;
+    }
+    
+    .section-header p {
+        font-size: 0.95rem;
+        padding: 0;
+    }
+    
+    .section-badge {
+        font-size: 0.65rem;
+        padding: 0.4rem 1rem;
+    }
+    
+    /* Messages Header Mobile */
+    .messages-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    /* Alert Messages Mobile */
+    .alert {
+        padding: 0.8rem 1rem;
+        margin: 0 0.5rem 1rem 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    /* Disable heavy animations for mobile */
+    .contact-card,
+    .form-info,
+    .form-card,
+    .message-item {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+    }
+    
+    /* Fix for mobile viewport */
+    html, body {
+        overflow-x: hidden;
+        width: 100%;
+    }
+    
+    main {
+        overflow-x: hidden;
+    }
+}
+
+/* Extra Small Mobile (Landscape) */
+@media (max-width: 480px) {
+    .hero h1 {
+        font-size: 1.75rem;
+    }
+    
+    .contact-card h3 {
+        font-size: 1rem;
+    }
+    
+    .contact-card .card-value {
+        font-size: 0.9rem;
+    }
+    
+    .form-info h2 {
+        font-size: 1.5rem;
+    }
+    
+    .btn-submit {
+        font-size: 0.9rem;
+    }
+    
+    /* Fix for very small screens */
+    .hero-content {
+        padding: 1rem;
+    }
+    
+    .scroll-indicator {
+        bottom: 1rem;
+    }
+    
+    .scroll-indicator span {
+        display: none; /* Hide text on very small screens */
+    }
+}
+
+/* Tablet Optimization */
+@media (min-width: 769px) and (max-width: 992px) {
+    .contact-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+    
+    .hero-content {
+        padding: 2rem 3rem;
+    }
+    
+    .form-container {
+        gap: 2rem;
+    }
+    
+    .form-card {
+        padding: 2rem;
+    }
+}
+
+/* Fix iOS specific issues */
+@supports (-webkit-touch-callout: none) {
+    input, textarea, select {
+        font-size: 16px !important; /* Prevent iOS zoom */
+    }
+    
+    .hero {
+        min-height: -webkit-fill-available; /* Fix iOS viewport */
+    }
+}
+
+/* Fix for Android Chrome */
+@media (hover: none) and (pointer: coarse) {
+    .contact-card:hover {
+        transform: none !important; /* Disable hover effects on touch */
+    }
+    
+    .btn-submit:hover {
+        transform: none !important;
+    }
+    
+    /* Better touch targets */
+    button, 
+    input[type="submit"],
+    select,
+    .contact-card {
+        min-height: 44px; /* Minimum touch target size */
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        min-height: 44px;
+    }
+}
+
     /* Hero Section */
     .hero {
         position: relative;
@@ -202,6 +478,144 @@ try {
         text-transform: uppercase;
         letter-spacing: 0.2em;
     }
+    
+    /* Tambahkan CSS berikut di bagian atas atau dalam section style yang sudah ada */
+
+/* Reset untuk mobile */
+@media (max-width: 768px) {
+    body {
+        overflow-x: hidden;
+        background: #000 !important;
+        padding-top: 0 !important;
+        margin: 0 !important;
+    }
+    
+    main {
+        position: relative;
+        width: 100%;
+        overflow-x: hidden;
+    }
+    
+    /* Hero section fix untuk mobile */
+    .hero {
+        min-height: 100vh !important;
+        min-height: 100dvh !important;
+        height: auto !important;
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+        background: #000 !important;
+    }
+    }
+    
+    .hero-bg {
+        animation: none !important;
+        background-color: #000 !important;
+        background-image: url('https://images.unsplash.com/photo-1423666639041-f56000c27a9a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+        background-position: center center !important;
+        background-size: cover !important;
+        background-repeat: no-repeat !important;
+        top: 0 !important;
+    }
+    
+    .hero-content {
+        padding: 1rem;
+        padding-top: 12vh; /* Sedikit ruang untuk navbar, bisa diubah sesuai kebutuhan */
+    }
+    
+    /* Perbaiki margin atas untuk section setelah hero */
+    .contact-section,
+    .form-section,
+    .messages-section {
+        padding-top: 4rem;
+        padding-bottom: 4rem;
+    }
+    
+    /* Pastikan tidak ada gap putih */
+    .contact-section {
+        margin-top: 0 !important;
+        background: #fff;
+    }
+    
+    /* Form section di mobile */
+    .form-container {
+        gap: 2rem;
+    }
+    
+    .form-card {
+        padding: 1.5rem;
+    }
+}
+
+/* Viewport fix untuk mobile */
+@viewport {
+    width: device-width;
+    zoom: 1.0;
+}
+
+@-ms-viewport {
+    width: device-width;
+}
+
+/* Fix untuk iOS Safari */
+@supports (-webkit-touch-callout: none) {
+    .hero {
+        min-height: -webkit-fill-available;
+    }
+}
+
+/* Fix untuk address bar mobile */
+html {
+    height: 100%;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    min-height: 100%;
+    position: relative;
+}
+
+/* Pastikan tidak ada margin/padding yang tidak diinginkan */
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Hero section specific fixes */
+.hero::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+/* Header fix untuk mobile */
+@media (max-width: 768px) {
+    header, .site-header {
+        background: transparent !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 1000 !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding-top: env(safe-area-inset-top, 0px) !important;
+    }
+    
+    main {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    .hero {
+        margin-top: -60px; /* Kompensasi untuk fixed header */
+        padding-top: 60px;
+    }
+}
+
+
     
     @keyframes fadeInUp {
         to { opacity: 1; transform: translateY(0); }
@@ -1013,6 +1427,35 @@ document.querySelectorAll('.contact-card').forEach(card => {
         card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
     });
 });
+
+// Fix untuk viewport mobile
+function fixMobileViewport() {
+    // Set viewport height untuk mobile
+    const setVH = () => {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+    
+    setVH();
+    window.addEventListener('resize', setVH);
+    
+    // Fix untuk iOS
+    if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+        document.documentElement.style.height = '-webkit-fill-available';
+        document.body.style.height = '-webkit-fill-available';
+        
+        // Prevent rubber-band scrolling
+        document.addEventListener('touchmove', function(e) {
+            if (e.scale !== 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+    }
+}
+
+// Panggil function saat DOM ready
+document.addEventListener('DOMContentLoaded', fixMobileViewport);
+
 </script>
 </body>
 </html>
