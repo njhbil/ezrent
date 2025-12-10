@@ -256,6 +256,8 @@ include 'header.php';
         color: #6b7280;
         font-weight: 300;
     }
+
+
     
     .features-grid {
         display: grid;
@@ -791,7 +793,7 @@ include 'header.php';
 <section class="video-hero">
     <div class="video-container">
         <video autoplay muted loop playsinline class="hero-video">
-            <source src="../../assets/video/Black and Blue Modern Simple Car Dealer Presentation.mp4" type="video/mp4">
+            <source src="../../assets/video/heroDashboard.mp4" type="video/mp4">
         </video>
         <div class="video-overlay"></div>
     </div>

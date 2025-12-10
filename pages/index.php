@@ -44,7 +44,7 @@ include '../php/includes/header.php';
     <section class="video-hero" style="position: relative; height: 100vh !important; width: 100% !important; margin-top: 0;">
         <div class="video-container" style="position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; z-index: 1;">
             <video autoplay muted loop playsinline class="hero-video" style="width: 100% !important; height: 100% !important; object-fit: cover;">
-                <source src="../assets/video/Black and Blue Modern Simple Car Dealer Presentation.mp4" type="video/mp4">
+                <source src="../assets/video/heroDashboard.mp4" type="video/mp4">
             </video>
             <div class="video-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.5)); z-index: 2;"></div>
         </div>
@@ -312,6 +312,12 @@ include '../php/includes/header.php';
             .vehicle-card > div:last-child {
                 padding: 1.1rem 1rem 1.2rem 1rem !important;
             }
+            .features-grid {
+                grid-template-columns:1fr !important;
+                gap: 1.5rem !important;
+
+            }
+            
         }
         
         </style>

@@ -86,6 +86,7 @@ $base_path = '../';
         .nav-links {
             display: flex;
             list-style: none;
+            margin-top: 20px ;
             gap: 2.5rem;
             align-items: center;
         }
@@ -95,7 +96,7 @@ $base_path = '../';
             text-decoration: none;
             font-weight: 300;
             font-size: 0.9rem;
-            padding: 0.5rem 0;
+            padding: 0.5 rem 0;
             position: relative;
             transition: all 0.3s ease;
             text-transform: uppercase;
@@ -449,7 +450,7 @@ $base_path = '../';
         }
 
         /* Responsive */
-        @media (max-width: 768px) {
+        @media (max-width: 880px) {
             .mobile-menu-btn {
                 display: block;
             }

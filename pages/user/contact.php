@@ -544,7 +544,7 @@ try {
     .form-card {
         padding: 1.5rem;
     }
-}
+
 
 /* Viewport fix untuk mobile */
 @viewport {
@@ -591,7 +591,7 @@ body {
 }
 
 /* Header fix untuk mobile */
-@media (max-width: 768px) {
+@media (max-width: 880px) {
     header, .site-header {
         background: transparent !important;
         position: fixed !important;

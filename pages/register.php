@@ -1,45 +1,20 @@
-<?php include '../php/includes/header.php'; ?>
-
-<!-- Mobile Logo Header -->
-<div class="mobile-logo-header">
-    <div class="visual-logo">
-        <div class="visual-logo-text">
-            <span class="ez">Ez</span><span class="rent">Rent</span><span class="dot">.</span>
-        </div>
-        <div class="visual-tagline">Rental Kendaraan</div>
-    </div>
-</div>
-
-<style>
-@media (max-width: 768px) {
-    .register-header {
-        width: 100%;
-        position: relative;
-        background: #0a0a0a !important;
-    }
-    .mobile-logo-header {
-        background: #0a0a0a !important;
-        margin-top: 3.5rem !important;
-    }
-    .mobile-logo-header .visual-logo-text {
-        margin-top: 0.5rem !important;
-    }
-    header {
-        background: #0a0a0a !important;
-        box-shadow: none !important;
-    }
-}
-</style>
 <?php 
-$page_title = "Daftar Akun - EzRent";
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-// Handle form submission
+// Jika user sudah login, redirect ke dashboard
+if (isset($_SESSION['user_id'])) {
+    header('Location: ' . ($_SESSION['role'] === 'admin' ? 'admin/dashboard.php' : 'user/dashboard.php'));
+    exit;
+}
+
+$page_title = "Daftar Akun - EzRent";
 $success_message = '';
 $error_message = '';
 $form_data = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Sanitize input data
     $nama_lengkap = trim($_POST['nama_lengkap'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $nomor_telepon = trim($_POST['nomor_telepon'] ?? '');
@@ -47,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $confirm_password = $_POST['confirm_password'] ?? '';
     $alamat = trim($_POST['alamat'] ?? '');
     
-    // Store form data for repopulation
+    // Simpan data form untuk repopulasi jika error
     $form_data = [
         'nama_lengkap' => $nama_lengkap,
         'email' => $email,
@@ -55,73 +30,82 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'alamat' => $alamat
     ];
     
-    // Validation
     $errors = [];
     
+    // Validasi input
     if (empty($nama_lengkap)) {
-        $errors[] = "Nama lengkap harus diisi";
+        $errors[] = "Nama lengkap wajib diisi";
     } elseif (strlen($nama_lengkap) < 2) {
         $errors[] = "Nama lengkap minimal 2 karakter";
     }
     
     if (empty($email)) {
-        $errors[] = "Email harus diisi";
+        $errors[] = "Email wajib diisi";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = "Format email tidak valid";
     }
     
     if (empty($nomor_telepon)) {
-        $errors[] = "Nomor telepon harus diisi";
-    } elseif (!preg_match('/^[0-9+\-\s()]{10,15}$/', $nomor_telepon)) {
-        $errors[] = "Format nomor telepon tidak valid";
+        $errors[] = "Nomor telepon wajib diisi";
     }
     
     if (empty($password)) {
-        $errors[] = "Password harus diisi";
+        $errors[] = "Password wajib diisi";
     } elseif (strlen($password) < 6) {
         $errors[] = "Password minimal 6 karakter";
     }
     
     if ($password !== $confirm_password) {
-        $errors[] = "Konfirmasi password tidak sesuai";
+        $errors[] = "Konfirmasi password tidak cocok";
     }
     
+    // Jika tidak ada error, proses registrasi
     if (empty($errors)) {
         try {
-            // Check if email already exists
             require_once '../php/config/database.php';
             
+            // Cek apakah email sudah terdaftar
             $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
             $stmt->execute([$email]);
-            $existing_user = $stmt->fetch();
             
-            if ($existing_user) {
+            if ($stmt->fetch()) {
                 $error_message = "Email sudah terdaftar. Silakan gunakan email lain.";
             } else {
-                // Hash password
+                // Hash password dengan PASSWORD_DEFAULT (bcrypt)
                 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
                 
-                // Insert new user dengan struktur tabel yang sesuai
+                // Insert user baru
                 $stmt = $pdo->prepare("
-                    INSERT INTO users (nama_lengkap, email, password, nomor_telepon, alamat, role, is_verified) 
-                    VALUES (?, ?, ?, ?, ?, 'user', TRUE)
+                    INSERT INTO users (nama_lengkap, email, password, nomor_telepon, alamat, role, is_verified, created_at) 
+                    VALUES (?, ?, ?, ?, ?, 'user', TRUE, NOW())
                 ");
-                $stmt->execute([$nama_lengkap, $email, $hashed_password, $nomor_telepon, $alamat]);
                 
-                $success_message = "Pendaftaran berhasil! Silakan login untuk melanjutkan.";
+                $result = $stmt->execute([
+                    $nama_lengkap, 
+                    $email, 
+                    $hashed_password, 
+                    $nomor_telepon, 
+                    $alamat
+                ]);
                 
-                // Clear form data
-                $form_data = [];
+                if ($result) {
+                    // Redirect ke login dengan pesan sukses
+                    header("Location: login.php?status=registered");
+                    exit;
+                } else {
+                    $error_message = "Gagal mendaftar. Silakan coba lagi.";
+                }
             }
-            
         } catch (PDOException $e) {
-            $error_message = "Terjadi kesalahan sistem: " . $e->getMessage();
+            error_log("Registration Error: " . $e->getMessage());
+            $error_message = "Terjadi kesalahan sistem. Silakan coba lagi.";
         }
     } else {
         $error_message = implode("<br>", $errors);
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -305,46 +289,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-size: 0.95rem;
         }
         
-        /* Success Message */
-        .success-box {
-            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-            border: 1px solid #10b981;
-            padding: 2rem;
-            text-align: center;
-            margin-bottom: 1.5rem;
-            animation: scaleIn 0.5s ease;
-        }
-        @keyframes scaleIn {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-        .success-box .icon {
-            width: 60px;
-            height: 60px;
-            background: #10b981;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1.25rem;
-        }
-        .success-box .icon svg {
-            width: 30px;
-            height: 30px;
-            color: #fff;
-        }
-        .success-box h3 {
-            color: #065f46;
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-        .success-box p {
-            color: #047857;
-            margin-bottom: 1.5rem;
-            font-size: 0.95rem;
-        }
-        
         /* Error Message */
         .error-box {
             background: #fef2f2;
@@ -437,12 +381,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             resize: vertical;
             min-height: 80px;
             padding: 0.875rem 1rem;
-        }
-        
-        .form-hint {
-            font-size: 0.75rem;
-            color: #9ca3af;
-            margin-top: 0.35rem;
         }
         
         /* Password strength */
@@ -589,40 +527,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             cursor: not-allowed;
             transform: none;
         }
-        .btn-register .spinner {
-            display: none;
-            width: 18px;
-            height: 18px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin-right: 0.5rem;
-        }
-        .btn-register.loading .spinner {
-            display: inline-block;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .btn-login-link {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            background: #000;
-            color: #fff;
-            text-decoration: none;
-            padding: 0.875rem 2rem;
-            font-weight: 500;
-            font-size: 0.9rem;
-            transition: all 0.3s;
-        }
-        .btn-login-link:hover {
-            background: #1a1a1a;
-            transform: translateY(-2px);
-        }
         
         /* Divider */
         .divider {
@@ -661,7 +565,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         /* Mobile */
-        @media (max-width: 1024px) {
+        @media (max-width: 769px) {
             .register-visual {
                 display: none !important;
             }
@@ -723,6 +627,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </a>
 </header>
 
+<!-- Mobile Logo Header -->
+<div class="mobile-logo-header">
+    <div class="visual-logo">
+        <div class="visual-logo-text">
+            <span class="ez">Ez</span><span class="rent">Rent</span><span class="dot">.</span>
+        </div>
+        <div class="visual-tagline">Rental Kendaraan</div>
+    </div>
+</div>
 
 <div class="register-wrapper">
     <!-- Left Side - Visual (Fixed) -->
@@ -747,26 +660,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <h1>Buat Akun Baru</h1>
                 <p>Isi data diri Anda untuk mendaftar</p>
             </div>
-            
-            <?php if ($success_message): ?>
-                <div class="success-box">
-                    <div class="icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                        </svg>
-                    </div>
-                    <h3>Pendaftaran Berhasil!</h3>
-                    <p><?php echo $success_message; ?></p>
-                    <a href="login.php" class="btn-login-link">
-                        Login Sekarang
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-                        </svg>
-                    </a>
-                </div>
-            <?php endif; ?>
 
-            <?php if ($error_message && !$success_message): ?>
+            <?php if ($error_message): ?>
                 <div class="error-box">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -775,7 +670,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             <?php endif; ?>
 
-            <?php if (!$success_message): ?>
             <form method="POST" action="" id="registrationForm">
                 <div class="form-group">
                     <label class="form-label">Nama Lengkap <span class="required">*</span></label>
@@ -881,11 +775,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <button type="submit" class="btn-register" id="submitBtn">
-                    <span class="spinner"></span>
                     <span class="btn-text">Daftar Sekarang</span>
                 </button>
             </form>
-            <?php endif; ?>
 
             <div class="divider">
                 <p>Sudah punya akun? <a href="login.php">Login di sini</a></p>
@@ -902,16 +794,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const strengthBars = document.querySelectorAll('.strength-bar');
     const form = document.getElementById('registrationForm');
     const submitBtn = document.getElementById('submitBtn');
-    const header = document.getElementById('header');
-
-    // Header scroll effect
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > 50) {
-            header.classList.add('scrolled');
-        } else {
-            header.classList.remove('scrolled');
-        }
-    });
 
     // Password strength checker
     function checkStrength(password) {
@@ -943,13 +825,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!passwordInput || !confirmInput || !passwordMatch) return;
         
         const password = passwordInput.value;
-        const confirmPassword = confirmInput.value;
+        const confirm_password = confirmInput.value;
         const matchSpan = passwordMatch.querySelector('span');
         const matchIcon = passwordMatch.querySelector('svg');
 
-        if (confirmPassword === '') {
+        if (confirm_password === '') {
             passwordMatch.classList.remove('visible', 'match', 'no-match');
-        } else if (password === confirmPassword) {
+        } else if (password === confirm_password) {
             passwordMatch.classList.add('visible', 'match');
             passwordMatch.classList.remove('no-match');
             matchSpan.textContent = 'Password cocok';
@@ -966,11 +848,11 @@ document.addEventListener('DOMContentLoaded', function() {
         confirmInput.addEventListener('input', checkPasswordMatch);
     }
 
-    // Form submission
+    // Form submission validation
     if (form) {
         form.addEventListener('submit', function(e) {
             const password = passwordInput.value;
-            const confirmPassword = confirmInput.value;
+            const confirm_password = confirmInput.value;
             const agreeTerms = document.getElementById('agree_terms').checked;
 
             if (password.length < 6) {
@@ -980,7 +862,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return false;
             }
 
-            if (password !== confirmPassword) {
+            if (password !== confirm_password) {
                 e.preventDefault();
                 alert('Konfirmasi password tidak sesuai');
                 confirmInput.focus();
@@ -994,7 +876,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             submitBtn.disabled = true;
-            submitBtn.classList.add('loading');
             submitBtn.querySelector('.btn-text').textContent = 'Mendaftarkan...';
         });
     }

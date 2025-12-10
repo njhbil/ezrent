@@ -48,32 +48,33 @@ $total_amount = (int)($duration * $booking['harga_per_hari']);
 // Initialize Midtrans API
 $midtrans = new MidtransAPI();
 
+
 // Payment methods available
 $payment_methods = [
     'bca' => [
         'name' => 'BCA Virtual Account',
-        'icon' => '🏦',
+        'icon' => '',
         'description' => 'Transfer via BCA Virtual Account',
         'color' => '#1f4788',
         'type' => 'bank_transfer'
     ],
     'bni' => [
         'name' => 'BNI Virtual Account', 
-        'icon' => '🏦',
+        'icon' => '',
         'description' => 'Transfer via BNI Virtual Account',
         'color' => '#ff6600',
         'type' => 'bank_transfer'
     ],
     'bri' => [
         'name' => 'BRI Virtual Account',
-        'icon' => '🏦', 
+        'icon' => '', 
         'description' => 'Transfer via BRI Virtual Account',
         'color' => '#0066cc',
         'type' => 'bank_transfer'
     ],
     'mandiri' => [
         'name' => 'Mandiri Bill Payment',
-        'icon' => '🏦',
+        'icon' => '',
         'description' => 'Bayar via Mandiri Bill Payment',
         'color' => '#003366',
         'type' => 'echannel'
@@ -481,8 +482,8 @@ main {
 
 <main>
     <div class="container">
-        <div class="header">
-            <h1>💳 Pilih Metode Pembayaran</h1>
+        <div class="header mt-5">
+            <h1>Pilih Metode Pembayaran</h1>
             <p>Pembayaran aman via Midtrans Payment Gateway</p>
         </div>
         
@@ -500,7 +501,7 @@ main {
                 <span><?= $start_date->format('d M') ?> - <?= $end_date->format('d M Y') ?></span>
             </div>
             <div class="total-box">
-                💰 Rp <?= number_format($total_amount, 0, ',', '.') ?>
+                 Rp <?= number_format($total_amount, 0, ',', '.') ?>
             </div>
         </div>
         
@@ -514,7 +515,7 @@ main {
         
         <form method="POST" id="paymentForm">
             <div class="methods-card">
-                <h2>🏦 Metode Pembayaran</h2>
+                <h2> Metode Pembayaran</h2>
                 
                 <div class="methods-grid">
                     <?php foreach ($payment_methods as $key => $method): ?>

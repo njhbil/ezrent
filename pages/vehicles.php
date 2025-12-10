@@ -70,6 +70,7 @@ $mobils = $stmt_mobil->fetchAll(PDO::FETCH_ASSOC);
         
         .nav-links { 
             display: flex; 
+            margin-top: 15px ;
             gap: 2.5rem; 
             list-style: none;
             align-items: center;

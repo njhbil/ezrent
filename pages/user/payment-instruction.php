@@ -421,7 +421,7 @@ body {
     <div class="payment-container">
         <div class="payment-header">
             <div class="status-badge status-pending" id="statusBadge">
-                ⏳ Menunggu Pembayaran
+                 Menunggu Pembayaran
             </div>
             <h1>Instruksi Pembayaran</h1>
             <p>Selesaikan pembayaran sebelum waktu expired</p>
@@ -585,7 +585,7 @@ body {
         </div>
 
         <div class="check-status">
-            <p>🔄 Status: <span id="statusText">Mengecek pembayaran...</span></p>
+            <p> Status: <span id="statusText">Mengecek pembayaran...</span></p>
         </div>
 
         <div class="action-buttons">

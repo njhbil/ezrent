@@ -86,6 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $is_logged_in) {
         
         .nav-links { 
             display: flex; 
+            margin-top: 15px;
             gap: 2.5rem; 
             list-style: none;
             align-items: center;

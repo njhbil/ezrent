@@ -543,8 +543,8 @@ body {
 }
 
 /* Sidebar */
-.sidebar-card {
-    position: sticky;
+.detail-sidebar {
+    position:sticky;
     top: 100px;
 }
 

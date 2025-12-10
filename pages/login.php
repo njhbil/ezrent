@@ -1,73 +1,95 @@
 <?php 
-// Pindahkan session_start() ke paling atas, sebelum output apapun
+
+if (function_exists('isLoggedIn')) {
+    die("<strong style='color: red;'>PROBLEM:  functions.php sudah di-include sebelum login logic! <br>Hapus session_start() dari functions.php!</strong>");
+}
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Handle form submission - HARUS SEBELUM OUTPUT APAPUN
+// Redirect jika sudah login
+if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
+    header('Location: ' . ($_SESSION['role'] === 'admin' ? 'admin/dashboard.php' : 'user/dashboard.php'));
+    exit;
+}
+
 $error_message = '';
-$form_data = [];
+$success_message = '';
+$email_value = '';
+
+// Cek pesan sukses dari Register
+if (isset($_GET['status']) && $_GET['status'] === 'registered') {
+    $success_message = "Pendaftaran berhasil! Silakan login dengan akun Anda.";
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Sanitize input data
-    $email = trim($_POST['email'] ?? '');
-    $password = $_POST['password'] ?? '';
+    $email = isset($_POST['email']) ? trim($_POST['email']) : '';
+    $password = isset($_POST['password']) ? $_POST['password'] : '';
+    $remember_me = isset($_POST['remember_me']) ? true : false;
     
-    // Store form data for repopulation
-    $form_data = ['email' => $email];
+    $email_value = htmlspecialchars($email);
     
-    // Validation
-    if (empty($email) || empty($password)) {
-        $error_message = "Email dan password harus diisi";
+    // Validasi input kosong
+    if (empty($email)) {
+        $error_message = "Email harus diisi";
+    } elseif (empty($password)) {
+        $error_message = "Password harus diisi";
     } else {
         try {
             require_once '../php/config/database.php';
             
-            // Cari user berdasarkan email
-            $stmt = $pdo->prepare("
-                SELECT id, nama_lengkap, email, password, role, is_verified, nomor_telepon, alamat, foto_profil
-                FROM users 
-                WHERE email = ?
-            ");
+            // Query user berdasarkan email
+            $stmt = $pdo->prepare("SELECT id, nama_lengkap, email, role, is_verified, foto_profil, password FROM users WHERE email = ?  LIMIT 1");
             $stmt->execute([$email]);
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
             
-            if ($user) {
-                // Verifikasi password dengan password_verify()
-                if (password_verify($password, $user['password'])) {
-                    // Password BENAR - set session
-                    $_SESSION['user_id'] = $user['id'];
-                    $_SESSION['nama_lengkap'] = $user['nama_lengkap'];
-                    $_SESSION['email'] = $user['email'];
-                    $_SESSION['role'] = $user['role'];
-                    $_SESSION['is_verified'] = $user['is_verified'];
-                    $_SESSION['nomor_telepon'] = $user['nomor_telepon'];
-                    $_SESSION['alamat'] = $user['alamat'];
-                    $_SESSION['foto_profil'] = $user['foto_profil'];
+            if ($result) {
+                // Verifikasi password
+                if (password_verify($password, $result['password'])) {
+                    // Password benar - Login berhasil
+                    session_regenerate_id(true);
                     
-                    // Redirect berdasarkan role
-                    if ($user['role'] === 'admin') {
-                        header('Location: admin/dashboard.php');
-                        exit;
-                    } else {
-                        header('Location: user/dashboard.php');
-                        exit;
+                    // Set session variables
+                    $_SESSION['user_id'] = $result['id'];
+                    $_SESSION['nama_lengkap'] = $result['nama_lengkap'];
+                    $_SESSION['email'] = $result['email'];
+                    $_SESSION['role'] = $result['role'];
+                    $_SESSION['is_verified'] = $result['is_verified'];
+                    $_SESSION['foto_profil'] = $result['foto_profil'] ?? null;
+                    
+                    // Remember me functionality
+                    if ($remember_me) {
+                        $cookie_token = bin2hex(random_bytes(32));
+                        setcookie('remember_token', $cookie_token, time() + (30 * 24 * 60 * 60), '/', '', true, true);
                     }
                     
+                    // Redirect sesuai role
+                    if ($result['role'] === 'admin') {
+                        header("Location: admin/dashboard.php");
+                    } else {
+                        header("Location: user/dashboard.php");
+                    }
+                    exit;
+                    
                 } else {
+                    // Password salah
                     $error_message = "Email atau password salah";
                 }
             } else {
+                // User tidak ditemukan
                 $error_message = "Email atau password salah";
             }
             
         } catch (PDOException $e) {
-            $error_message = "Terjadi kesalahan sistem: " . $e->getMessage();
+            // Error database
+            $error_message = "Terjadi kesalahan sistem. Silakan coba lagi.";
+            error_log("Login Database Error: " . $e->getMessage());
         }
     }
 }
 
 $page_title = "Login - EzRent";
+
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -187,19 +209,25 @@ $page_title = "Login - EzRent";
             text-transform: uppercase;
             margin-top: 1rem;
         }
-            /* Mobile: Give hero more top padding so it doesn't touch navbar */
-            @media (max-width: 768px) {
-                            .mobile-logo-header {
-                                margin-top: 3.5rem !important;
-                            }
-                            .mobile-logo-header .visual-logo-text {
-                                margin-top: 0.5rem !important;
-                            }
-                .visual-content {
-                    padding-top: 6.5rem !important;
-                    padding-bottom: 2.5rem !important;
-                }
+        
+        @media (min-width: 769px) {
+            .navbar {
+                display: none !important;
             }
+        }
+        @media (max-width: 768px) {
+            .mobile-logo-header {
+                margin-top: 3.5rem !important;
+            }
+            .mobile-logo-header .visual-logo-text {
+                margin-top: 0.5rem !important;
+            }
+            .visual-content {
+                padding-top: 6.5rem !important;
+                padding-bottom: 2.5rem !important;
+            }
+            .login-header { display: none !important; }
+        }
         
         /* Decorative elements */
         .decor-circle {
@@ -263,6 +291,34 @@ $page_title = "Login - EzRent";
         .form-header p {
             color: #6b7280;
             font-size: 0.95rem;
+        }
+        
+        /* Success Message */
+        .success-box {
+            background: #f0fdf4;
+            border-left: 4px solid #10b981;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            animation: slideIn 0.5s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .success-box svg {
+            width: 20px;
+            height: 20px;
+            color: #10b981;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .success-box span {
+            color: #065f46;
+            font-size: 0.9rem;
+            line-height: 1.5;
         }
         
         /* Error Message */
@@ -433,6 +489,7 @@ $page_title = "Login - EzRent";
             justify-content: center;
             gap: 0.75rem;
             font-family: inherit;
+            position: relative;
         }
         .btn-login:hover {
             background: transparent;
@@ -441,6 +498,9 @@ $page_title = "Login - EzRent";
         .btn-login:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+        }
+        .btn-login .btn-text {
+            transition: opacity 0.3s;
         }
         .btn-login.loading .btn-text {
             opacity: 0;
@@ -453,10 +513,10 @@ $page_title = "Login - EzRent";
             border-top-color: currentColor;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
+            position: absolute;
         }
         .btn-login.loading .spinner {
             display: block;
-            position: absolute;
         }
         @keyframes spin {
             to { transform: rotate(360deg); }
@@ -500,7 +560,7 @@ $page_title = "Login - EzRent";
         }
         
         /* Mobile */
-        @media (max-width: 1024px) {
+        @media (max-width: 769px) {
             .login-visual {
                 display: none;
             }
@@ -552,7 +612,15 @@ $page_title = "Login - EzRent";
 </head>
 <body>
 
-<?php include '../php/includes/header.php'; ?>
+
+<header class="login-header" id="header">
+    <a href="index.php" class="back-link">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        <span>Kembali ke Beranda</span>
+    </a>
+</header>
 
 <!-- Mobile Logo Header -->
 <div class="mobile-logo-header">
@@ -588,6 +656,15 @@ $page_title = "Login - EzRent";
                 <p>Masuk ke akun Anda untuk melanjutkan</p>
             </div>
             
+            <?php if ($success_message): ?>
+                <div class="success-box">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span><?php echo htmlspecialchars($success_message); ?></span>
+                </div>
+            <?php endif; ?>
+            
             <?php if ($error_message): ?>
                 <div class="error-box">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -597,14 +674,15 @@ $page_title = "Login - EzRent";
                 </div>
             <?php endif; ?>
 
-            <form method="POST" action="" id="loginForm">
+            <form method="POST" action="" id="loginForm" autocomplete="on">
                 <div class="form-group">
                     <label class="form-label">Email <span class="required">*</span></label>
                     <div class="input-wrapper">
                         <input type="email" name="email" required 
-                               value="<?php echo htmlspecialchars($form_data['email'] ?? ''); ?>"
+                               value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>"
                                class="form-input"
                                placeholder="email@contoh.com"
+                               autocomplete="email"
                                id="email">
                         <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
@@ -618,6 +696,7 @@ $page_title = "Login - EzRent";
                         <input type="password" name="password" required 
                                class="form-input"
                                placeholder="Masukkan password"
+                               autocomplete="current-password"
                                id="password">
                         <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
@@ -659,19 +738,30 @@ document.addEventListener('DOMContentLoaded', function() {
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
 
+    // Form submission
     form.addEventListener('submit', function(e) {
         const email = emailInput.value.trim();
         const password = passwordInput.value;
 
+        // Validasi client-side
         if (!email || !password) {
             e.preventDefault();
             alert('Email dan password harus diisi');
             return false;
         }
 
+        // Validasi format email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            e.preventDefault();
+            alert('Format email tidak valid');
+            emailInput.focus();
+            return false;
+        }
+
+        // Disable button dan tampilkan loading
         submitBtn.disabled = true;
         submitBtn.classList.add('loading');
-        submitBtn.querySelector('.btn-text').textContent = 'Memproses...';
     });
 
     // Input animations
@@ -684,7 +774,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    emailInput.focus();
+    // Auto focus email input
+    if (emailInput && !emailInput.value) {
+        emailInput.focus();
+    }
 });
 </script>
 

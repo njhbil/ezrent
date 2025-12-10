@@ -200,7 +200,7 @@ if (strpos($_SERVER['PHP_SELF'], '/php/pages/') !== false) {
         }
 
         /* Responsive */
-        @media (max-width: 768px) {
+        @media (max-width: 950px) {
             .mobile-menu-btn {
                 display: block;
             }
@@ -212,6 +212,8 @@ if (strpos($_SERVER['PHP_SELF'], '/php/pages/') !== false) {
 
             .nav-links {
                 display: none;
+                margin-top: 25px;
+                margin-left: 25px;
                 position: absolute;
                 top: 100%;
                 left: 0;

@@ -450,7 +450,7 @@ include 'header.php';
         <div class="booking-grid">
             <!-- Form Section -->
             <div class="form-card">
-                <h3>📝 Detail Pemesanan</h3>
+                <h3>Detail Pemesanan</h3>
                 
                 <form method="POST" id="bookingForm" enctype="multipart/form-data">
                     <div class="form-row">
