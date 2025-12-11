@@ -16,11 +16,25 @@
         html, body {
             min-height: 100%;
             width: 100%;
+            overflow-x: hidden;
+            max-width: 100vw;
         }
         body { 
             background: #fafafa; 
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             -webkit-font-smoothing: antialiased;
+            position: relative;
+        }
+        
+        /* Global fix for horizontal overflow */
+        .d-flex { 
+            max-width: 100%; 
+        }
+        
+        /* Chart responsive */
+        canvas {
+            max-width: 100% !important;
+            height: auto !important;
         }
         
         /* Sidebar - iOS/Glassmorphism Style */
@@ -309,6 +323,9 @@
             min-height: 100vh;
             padding: 0;
             background: #fafafa;
+            width: calc(100% - 280px);
+            max-width: calc(100vw - 280px);
+            overflow-x: hidden;
         }
         
         /* Top Header Bar */
@@ -426,11 +443,22 @@
             padding: 2.5rem;
             width: 100%;
             min-width: 0;
+            max-width: 100%;
+            overflow-x: hidden;
         }
         
         .content-area .row {
             margin: 0;
             width: 100%;
+            max-width: 100%;
+        }
+        
+        .content-area .col-xl-3,
+        .content-area .col-lg-8,
+        .content-area .col-lg-4,
+        .content-area .col-md-6,
+        .content-area [class*="col-"] {
+            max-width: 100%;
         }
         
         /* Cards - Elegant Minimalist Design */
@@ -817,20 +845,170 @@
         }
         
         /* Responsive */
+        @media (max-width: 1199px) {
+            .content-area { padding: 1.5rem; }
+            .stat-card .stat-value { font-size: 1.75rem; }
+        }
+        
         @media (max-width: 991px) {
             .sidebar { 
                 transform: translateX(-100%); 
                 width: 280px;
+                z-index: 1050;
             }
             .sidebar.show { transform: translateX(0); }
-            .main-content { margin-left: 0; }
-            .top-header {
-                padding: 1rem 1.5rem;
+            .main-content { 
+                margin-left: 0; 
+                width: 100%;
+                max-width: 100vw;
+                overflow-x: hidden;
             }
-            .content-area {
-                padding: 1.5rem;
+            .top-header { 
+                padding: 1rem 1.25rem;
+                max-width: 100%;
+            }
+            .content-area { 
+                padding: 1rem; 
+                width: 100%;
+                max-width: 100%;
+                overflow-x: hidden;
+            }
+            .page-info h1 { font-size: 1.25rem; }
+            .header-actions { gap: 0.5rem; }
+            .current-time { display: none; }
+            .header-btn-logout span { display: none; }
+            .header-btn-logout { padding: 0.5rem 0.75rem; }
+            
+            /* Prevent any element from causing horizontal scroll */
+            .d-flex { flex-wrap: wrap; }
+            .card { max-width: 100%; overflow: hidden; }
+            img { max-width: 100%; height: auto; }
+            
+            /* Fix modals and dropdowns */
+            .modal-dialog { margin: 0.5rem; max-width: calc(100% - 1rem); }
+            .dropdown-menu { max-width: 100vw; }
+            
+            .mobile-toggle {
+                display: flex !important;
+                width: 40px;
+                height: 40px;
+                border: 1px solid #e5e7eb;
+                background: #fff;
+                align-items: center;
+                justify-content: center;
+                color: #374151;
+                cursor: pointer;
+                margin-right: 1rem;
+                border-radius: 8px;
+                flex-shrink: 0;
+            }
+            
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 1040;
+            }
+            .sidebar-overlay.show { display: block; }
+            
+            /* Prevent horizontal scroll */
+            .table-responsive { 
+                overflow-x: auto; 
+                -webkit-overflow-scrolling: touch;
+                max-width: 100%;
+            }
+            .card { 
+                max-width: 100%; 
+                overflow: hidden;
+            }
+            .row { 
+                margin-left: 0; 
+                margin-right: 0; 
+                max-width: 100%;
             }
         }
+        
+        @media (max-width: 767px) {
+            .top-header { 
+                padding: 0.75rem 1rem;
+                flex-wrap: wrap;
+                gap: 0.75rem;
+            }
+            .page-info { flex: 1; min-width: 0; }
+            .page-info h1 { font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .page-info .breadcrumb { font-size: 0.7rem; }
+            .content-area { padding: 0.75rem; }
+            .stat-card { padding: 1rem; }
+            .stat-card .stat-value { font-size: 1.5rem; }
+            .stat-card .stat-label { font-size: 0.7rem; }
+            .stat-card .stat-change { font-size: 0.65rem; margin-top: 0.5rem; padding-top: 0.5rem; }
+            .card-header { padding: 0.875rem 1rem; font-size: 0.8rem; }
+            .card-body { padding: 1rem; }
+            .table thead th { font-size: 0.65rem; padding: 0.75rem 0.5rem; }
+            .table tbody td { font-size: 0.8rem; padding: 0.75rem 0.5rem; }
+            .btn { padding: 0.5rem 1rem; font-size: 0.75rem; }
+            .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.65rem; }
+            .header-btn { width: 36px; height: 36px; }
+            
+            /* Table horizontal scroll on mobile */
+            .table { 
+                min-width: 600px; 
+            }
+            .table-responsive {
+                border-radius: 8px;
+            }
+        }
+        
+        @media (max-width: 575px) {
+            .row.g-4 { --bs-gutter-y: 0.75rem; --bs-gutter-x: 0.75rem; }
+            .header-actions .header-btn:not(:last-child) { display: none; }
+            
+            /* Stack stat cards */
+            .col-xl-3, .col-md-6 {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+            
+            .stat-card {
+                padding: 0.875rem;
+            }
+            .stat-card .stat-value { font-size: 1.35rem; }
+            
+            /* Mobile friendly buttons */
+            .btn-group {
+                flex-direction: column;
+                width: 100%;
+            }
+            .btn-group .btn {
+                width: 100%;
+                margin-bottom: 0.25rem;
+            }
+            
+            /* Extra small screen fixes */
+            .top-header {
+                padding: 0.75rem 1rem;
+            }
+            .content-area {
+                padding: 0.75rem;
+            }
+            .card-body {
+                padding: 0.75rem;
+            }
+            
+            /* Hide text on very small action buttons */
+            .btn span.d-none-xs { display: none; }
+            
+            /* Form elements */
+            .form-control, .form-select {
+                font-size: 16px; /* Prevent iOS zoom on focus */
+            }
+        }
+        
+        .mobile-toggle { display: none; }
     </style>
 </head>
 <body>
@@ -846,9 +1024,12 @@ try {
 } catch (Exception $e) {}
 ?>
 
-<div class="d-flex">
+<div class="d-flex" style="max-width: 100vw; overflow-x: hidden;">
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    
     <!-- Sidebar -->
-    <nav class="sidebar">
+    <nav class="sidebar" id="sidebar">
         <!-- Logo Section -->
         <div class="sidebar-header">
             <div class="logo-container">
@@ -895,6 +1076,10 @@ try {
                 <i class="fas fa-users"></i>
                 <span>Pengguna</span>
             </a>
+            <a class="nav-link <?php echo (basename($_SERVER['PHP_SELF']) == 'discounts.php') ? 'active' : ''; ?>" href="discounts.php">
+                <i class="fas fa-tags"></i>
+                <span>Kode Diskon</span>
+            </a>
             
             <div class="nav-section-title">Komunikasi</div>
             
@@ -935,6 +1120,9 @@ try {
     <main class="main-content">
         <!-- Top Header -->
         <div class="top-header">
+            <button class="mobile-toggle" onclick="toggleSidebar()" title="Menu">
+                <i class="fas fa-bars"></i>
+            </button>
             <div class="page-info">
                 <h1><?php 
                     $currentPage = basename($_SERVER['PHP_SELF'], '.php');
@@ -943,6 +1131,7 @@ try {
                         'bookings' => 'Manajemen Pesanan',
                         'vehicles' => 'Manajemen Kendaraan',
                         'users' => 'Manajemen Pengguna',
+                        'discounts' => 'Kode Diskon',
                         'messages' => 'Pesan Pelanggan',
                         'reports' => 'Laporan',
                         'settings' => 'Pengaturan',
@@ -982,7 +1171,6 @@ try {
         <div class="content-area">
 
 <script>
-// Update current time
 function updateTime() {
     const now = new Date();
     const options = { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' };
@@ -990,4 +1178,9 @@ function updateTime() {
 }
 updateTime();
 setInterval(updateTime, 60000);
+
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('show');
+    document.getElementById('sidebarOverlay').classList.toggle('show');
+}
 </script>

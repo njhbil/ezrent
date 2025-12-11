@@ -1039,8 +1039,22 @@ body {
                             <span class="price-label">Durasi Sewa</span>
                             <span class="price-value"><?php echo $duration; ?> Hari</span>
                         </div>
+                        
+                        <?php if (!empty($booking['discount_code']) && $booking['discount_amount'] > 0): ?>
+                        <div class="price-row">
+                            <span class="price-label">Subtotal</span>
+                            <span class="price-value">Rp <?php echo number_format($booking['total_price'] + $booking['discount_amount'], 0, ',', '.'); ?></span>
+                        </div>
+                        <div class="price-row" style="color: #22c55e;">
+                            <span class="price-label">
+                                <i class="fas fa-tag"></i> Diskon (<?php echo strtoupper($booking['discount_code']); ?>)
+                            </span>
+                            <span class="price-value">-Rp <?php echo number_format($booking['discount_amount'], 0, ',', '.'); ?></span>
+                        </div>
+                        <?php endif; ?>
+                        
                         <div class="price-row total">
-                            <span class="price-label">Total</span>
+                            <span class="price-label">Total Bayar</span>
                             <span class="price-value">Rp <?php echo number_format($booking['total_price'], 0, ',', '.'); ?></span>
                         </div>
                         

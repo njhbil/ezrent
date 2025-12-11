@@ -3,7 +3,6 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Jika user sudah login, redirect ke dashboard
 if (isset($_SESSION['user_id'])) {
     header('Location: ' . ($_SESSION['role'] === 'admin' ? 'admin/dashboard.php' : 'user/dashboard.php'));
     exit;
@@ -22,7 +21,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $confirm_password = $_POST['confirm_password'] ?? '';
     $alamat = trim($_POST['alamat'] ?? '');
     
-    // Simpan data form untuk repopulasi jika error
     $form_data = [
         'nama_lengkap' => $nama_lengkap,
         'email' => $email,
@@ -32,7 +30,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     $errors = [];
     
-    // Validasi input
     if (empty($nama_lengkap)) {
         $errors[] = "Nama lengkap wajib diisi";
     } elseif (strlen($nama_lengkap) < 2) {
@@ -59,22 +56,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = "Konfirmasi password tidak cocok";
     }
     
-    // Jika tidak ada error, proses registrasi
     if (empty($errors)) {
         try {
             require_once '../php/config/database.php';
             
-            // Cek apakah email sudah terdaftar
             $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
             $stmt->execute([$email]);
             
             if ($stmt->fetch()) {
                 $error_message = "Email sudah terdaftar. Silakan gunakan email lain.";
             } else {
-                // Hash password dengan PASSWORD_DEFAULT (bcrypt)
                 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
                 
-                // Insert user baru
                 $stmt = $pdo->prepare("
                     INSERT INTO users (nama_lengkap, email, password, nomor_telepon, alamat, role, is_verified, created_at) 
                     VALUES (?, ?, ?, ?, ?, 'user', TRUE, NOW())
@@ -89,7 +82,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
                 
                 if ($result) {
-                    // Redirect ke login dengan pesan sukses
                     header("Location: login.php?status=registered");
                     exit;
                 } else {

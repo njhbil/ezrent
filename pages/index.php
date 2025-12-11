@@ -36,8 +36,188 @@ try {
 }
 
 $page_title = "EzRent - Sewa Kendaraan Mudah & Terpercaya";
-include '../php/includes/header.php'; 
 ?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title><?php echo $page_title; ?></title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="../assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../assets/css/responsive.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; color: #000; }
+        
+        /* Header */
+        .site-header {
+            background: transparent;
+            padding: 0.75rem 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+        .site-header.scrolled {
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(10px);
+        }
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo { 
+            font-size: 1.75rem;
+            color: #fff; 
+            text-decoration: none; 
+            display: flex;
+            align-items: baseline;
+            letter-spacing: -0.03em;
+        }
+        .logo-ez { font-weight: 300; color: #fff; }
+        .logo-rent { font-weight: 700; color: #fff; }
+        .logo-accent { color: #d50000; font-weight: 700; }
+        
+        .nav-links { 
+            display: flex; 
+            gap: 2.5rem; 
+            list-style: none;
+            align-items: center;
+        }
+        .nav-links a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-weight: 300;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 0.5rem 0;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: white;
+            transition: width 0.3s ease;
+        }
+        .nav-links a:hover::after, .nav-links a.active::after { width: 100%; }
+        .nav-links a:hover, .nav-links a.active { color: #fff; }
+        
+        .auth-buttons { 
+            display: flex; 
+            gap: 1.5rem;
+            align-items: center;
+        }
+        .btn-login {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-weight: 300;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-size: 0.85rem;
+        }
+        .btn-login:hover { color: #fff; }
+        .btn-register { 
+            background: white;
+            color: black;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.6rem 1.75rem;
+            border: 2px solid white;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+        .btn-register:hover { 
+            background: transparent;
+            color: white;
+        }
+        
+        /* Mobile Menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: white;
+        }
+        
+        @media (max-width: 950px) {
+            .mobile-menu-btn { display: block; }
+            .site-header { background: #0a0a0a !important; }
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: rgba(0,0,0,0.98);
+                backdrop-filter: blur(10px);
+                flex-direction: column;
+                padding: 2rem 1rem;
+                gap: 1.5rem;
+            }
+            .nav-links.active { display: flex; }
+            .auth-buttons .btn-register { display: none; }
+            .logo { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="site-header">
+    <div class="header-container">
+        <nav class="navbar">
+            <button class="mobile-menu-btn" onclick="toggleMenu()">☰</button>
+            <a href="index.php" class="logo">
+                <span class="logo-ez">Ez</span><span class="logo-rent">Rent</span><span class="logo-accent">.</span>
+            </a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="index.php" class="active">Beranda</a></li>
+                <li><a href="vehicles.php">Kendaraan</a></li>
+                <li><a href="about.php">Tentang Kami</a></li>
+                <li><a href="contact.php">Kontak</a></li>
+            </ul>
+            <div class="auth-buttons">
+                <a href="login.php" class="btn-login">Login</a>
+                <a href="register.php" class="btn-register">Daftar</a>
+            </div>
+        </nav>
+    </div>
+</header>
+
+<script>
+function toggleMenu() {
+    document.getElementById('navLinks').classList.toggle('active');
+}
+window.addEventListener('scroll', function() {
+    const header = document.querySelector('.site-header');
+    if (window.scrollY > 50) {
+        header.classList.add('scrolled');
+    } else {
+        header.classList.remove('scrolled');
+    }
+});
+</script>
 
 <main>
     <!-- Video Hero Section -->
@@ -469,4 +649,9 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<?php include '../php/includes/footer.php'; ?>
+<footer style="background: #000; color: #fff; padding: 3rem 20px; text-align: center;">
+    <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">© 2024 EzRent. All rights reserved.</p>
+</footer>
+
+</body>
+</html>

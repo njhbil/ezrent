@@ -1,13 +1,13 @@
 <?php
 session_start();
-// 1. Cek Login Admin
+
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') { 
     header("Location: ../login.php"); 
     exit(); 
 }
+
 require_once '../../php/config/database.php';
 
-// --- LOGIKA EXPORT KE EXCEL (CSV) ---
 if (isset($_GET['export']) && $_GET['export'] == 'excel') {
     header('Content-Type: text/csv');
     header('Content-Disposition: attachment; filename="data_pengguna_ezrent.csv"');
@@ -27,33 +27,29 @@ if (isset($_GET['export']) && $_GET['export'] == 'excel') {
     exit();
 }
 
-// --- HANDLE DELETE ---
-if(isset($_GET['delete_id'])) {
+if (isset($_GET['delete_id'])) {
     $id = $_GET['delete_id'];
-    if($id != $_SESSION['user_id']) { 
+    if ($id != $_SESSION['user_id']) { 
         try {
-            // Cek booking aktif
             $chk = $pdo->prepare("SELECT count(*) FROM bookings WHERE user_id = ? AND status IN ('active', 'pending')");
             $chk->execute([$id]);
-            if($chk->fetchColumn() > 0) {
+            if ($chk->fetchColumn() > 0) {
                 echo "<script>alert('Gagal: User ini memiliki pesanan yang sedang berjalan/pending.'); window.location='users.php';</script>";
             } else {
                 $pdo->prepare("DELETE FROM users WHERE id = ?")->execute([$id]);
                 echo "<script>alert('User berhasil dihapus'); window.location='users.php';</script>";
             }
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             echo "<script>alert('Error: Data tidak bisa dihapus karena terikat data lain.'); window.location='users.php';</script>";
         }
     }
 }
 
-// --- HANDLE VERIFY ---
-if(isset($_GET['verify_id'])) {
+if (isset($_GET['verify_id'])) {
     $pdo->prepare("UPDATE users SET is_verified = 1 WHERE id = ?")->execute([$_GET['verify_id']]);
     echo "<script>window.location='users.php';</script>";
 }
 
-// --- HITUNG STATISTIK ---
 $stats = [
     'total' => $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn(),
     'active' => $pdo->query("SELECT COUNT(*) FROM users WHERE is_verified = 1 AND role = 'user'")->fetchColumn(),
@@ -61,7 +57,6 @@ $stats = [
     'new_month' => $pdo->query("SELECT COUNT(*) FROM users WHERE MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE())")->fetchColumn()
 ];
 
-// --- FILTER & PENCARIAN ---
 $search = $_GET['search'] ?? '';
 $filter_status = $_GET['status'] ?? '';
 
@@ -86,7 +81,6 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// --- AKTIVITAS TERBARU (GABUNGAN USER & BOOKING) ---
 $activity_sql = "
     SELECT 'booking' as type, b.created_at, u.nama_lengkap, 'melakukan pemesanan kendaraan' as action
     FROM bookings b JOIN users u ON b.user_id = u.id
@@ -109,56 +103,63 @@ include 'header.php';
     .activity-item { padding-left: 15px; border-left: 2px solid #e9ecef; position: relative; padding-bottom: 20px; }
     .activity-item::before { content: ''; width: 10px; height: 10px; background: #3b82f6; border-radius: 50%; position: absolute; left: -6px; top: 5px; }
     .activity-item.register::before { background: #10b981; }
+    
+    @media (max-width: 767px) {
+        .table-custom thead { display: none; }
+        .table-custom tbody tr { display: block; margin-bottom: 1rem; padding: 1rem; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .table-custom td { display: block; padding: 0.5rem 0; text-align: left; border: none; }
+        .table-custom td::before { content: attr(data-label); font-weight: 600; color: #6c757d; font-size: 0.75rem; display: block; margin-bottom: 0.25rem; }
+    }
 </style>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <div>
         <h2 class="fw-bold text-dark mb-0">Manajemen Pengguna</h2>
-        <p class="text-muted mb-0">Kelola data pelanggan dan hak akses.</p>
+        <p class="text-muted mb-0 d-none d-md-block">Kelola data pelanggan dan hak akses.</p>
     </div>
     <div>
-        <button class="btn btn-primary" onclick="alert('User mendaftar melalui halaman Register publik.')">
-            <i class="fas fa-plus me-2"></i> Tambah User
+        <button class="btn btn-primary btn-sm" onclick="alert('User mendaftar melalui halaman Register publik.')">
+            <i class="fas fa-plus me-1"></i> <span class="d-none d-sm-inline">Tambah User</span><span class="d-sm-none">Tambah</span>
         </button>
     </div>
 </div>
 
-<div class="row g-4 mb-4">
-    <div class="col-md-3">
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
         <div class="card card-stat border-start border-4 border-primary p-3">
             <div class="text-muted small mb-1">Total Pengguna</div>
             <div class="d-flex align-items-center justify-content-between">
                 <h2 class="mb-0 fw-bold"><?php echo $stats['total']; ?></h2>
-                <div class="text-success small fw-bold">
-                    <i class="fas fa-arrow-up"></i> <?php echo $stats['new_month']; ?> bulan ini
+                <div class="text-success small fw-bold d-none d-lg-block">
+                    <i class="fas fa-arrow-up"></i> <?php echo $stats['new_month']; ?>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-6 col-md-3">
         <div class="card card-stat border-start border-4 border-success p-3">
             <div class="text-muted small mb-1">Pengguna Aktif</div>
             <div class="d-flex align-items-center justify-content-between">
                 <h2 class="mb-0 fw-bold text-success"><?php echo $stats['active']; ?></h2>
-                <i class="fas fa-user-check fa-2x text-success opacity-25"></i>
+                <i class="fas fa-user-check fa-lg text-success opacity-25 d-none d-sm-block"></i>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-6 col-md-3">
         <div class="card card-stat border-start border-4 border-warning p-3">
-            <div class="text-muted small mb-1">Menunggu Verifikasi</div>
+            <div class="text-muted small mb-1">Verifikasi</div>
             <div class="d-flex align-items-center justify-content-between">
                 <h2 class="mb-0 fw-bold text-warning"><?php echo $stats['pending']; ?></h2>
-                <small class="text-warning">Perlu tindakan</small>
+                <small class="text-warning d-none d-lg-block">Perlu tindakan</small>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-6 col-md-3">
         <div class="card card-stat border-start border-4 border-danger p-3">
             <div class="text-muted small mb-1">Admin Sistem</div>
             <div class="d-flex align-items-center justify-content-between">
                 <h2 class="mb-0 fw-bold text-danger">1</h2>
-                <i class="fas fa-shield-alt fa-2x text-danger opacity-25"></i>
+                <i class="fas fa-shield-alt fa-lg text-danger opacity-25 d-none d-sm-block"></i>
             </div>
         </div>
     </div>

@@ -557,7 +557,7 @@ if ($booking) {
                         </td>
                         <td><?php echo $duration; ?> hari</td>
                         <td class="item-price">Rp <?php echo number_format($booking['daily_rate'] ?? ($booking['total_price'] / $duration), 0, ',', '.'); ?></td>
-                        <td class="item-price">Rp <?php echo number_format($booking['total_price'], 0, ',', '.'); ?></td>
+                        <td class="item-price">Rp <?php echo number_format($booking['total_price'] + ($booking['discount_amount'] ?? 0), 0, ',', '.'); ?></td>
                     </tr>
                 </tbody>
             </table>
@@ -567,18 +567,22 @@ if ($booking) {
             <div class="summary-box">
                 <div class="summary-row">
                     <span class="summary-label">Subtotal</span>
-                    <span class="summary-value">Rp <?php echo number_format($booking['total_price'], 0, ',', '.'); ?></span>
+                    <span class="summary-value">Rp <?php echo number_format($booking['total_price'] + ($booking['discount_amount'] ?? 0), 0, ',', '.'); ?></span>
                 </div>
+                <?php if (!empty($booking['discount_code']) && $booking['discount_amount'] > 0): ?>
+                <div class="summary-row" style="color: #22c55e;">
+                    <span class="summary-label">
+                        <i class="fas fa-tag"></i> Diskon (<?php echo strtoupper($booking['discount_code']); ?>)
+                    </span>
+                    <span class="summary-value">-Rp <?php echo number_format($booking['discount_amount'], 0, ',', '.'); ?></span>
+                </div>
+                <?php endif; ?>
                 <div class="summary-row">
                     <span class="summary-label">Pajak (0%)</span>
                     <span class="summary-value">Rp 0</span>
                 </div>
-                <div class="summary-row">
-                    <span class="summary-label">Diskon</span>
-                    <span class="summary-value">-Rp 0</span>
-                </div>
                 <div class="summary-row total">
-                    <span class="summary-label">Total</span>
+                    <span class="summary-label">Total Bayar</span>
                     <span class="summary-value">Rp <?php echo number_format($booking['total_price'], 0, ',', '.'); ?></span>
                 </div>
             </div>

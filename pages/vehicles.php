@@ -31,107 +31,6 @@ $mobils = $stmt_mobil->fetchAll(PDO::FETCH_ASSOC);
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; color: #000; }
         
-        /* Header - Transparent & merge with hero */
-        .site-header {
-            background: transparent;
-            padding: 0.75rem 0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            transition: all 0.3s ease;
-        }
-        .site-header.scrolled {
-            background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(10px);
-        }
-        .header-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .logo { 
-            font-size: 1.75rem;
-            color: #fff; 
-            text-decoration: none; 
-            display: flex;
-            align-items: baseline;
-            letter-spacing: -0.03em;
-        }
-        .logo-ez { font-weight: 300; color: #fff; }
-        .logo-rent { font-weight: 700; color: #fff; }
-        .logo-accent { color: #d50000; font-weight: 700; }
-        
-        .nav-links { 
-            display: flex; 
-            margin-top: 15px ;
-            gap: 2.5rem; 
-            list-style: none;
-            align-items: center;
-        }
-        .nav-links a {
-            color: rgba(255,255,255,0.8);
-            text-decoration: none;
-            font-weight: 300;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            padding: 0.5rem 0;
-            position: relative;
-            transition: color 0.3s ease;
-        }
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 1px;
-            background: white;
-            transition: width 0.3s ease;
-        }
-        .nav-links a:hover::after, .nav-links a.active::after { width: 100%; }
-        .nav-links a:hover, .nav-links a.active { color: #fff; }
-        
-        .auth-buttons { 
-            display: flex; 
-            gap: 1.5rem;
-            align-items: center;
-        }
-        .btn-login {
-            color: rgba(255,255,255,0.8);
-            text-decoration: none;
-            font-weight: 300;
-            padding: 0.5rem 1rem;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            font-size: 0.85rem;
-        }
-        .btn-login:hover { color: #fff; }
-        .btn-register { 
-            background: white;
-            color: black;
-            text-decoration: none;
-            font-weight: 500;
-            padding: 0.6rem 1.75rem;
-            border: 2px solid white;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
-        }
-        .btn-register:hover { 
-            background: transparent;
-            color: white;
-        }
-        
         /* Hero */
         .hero {
             position: relative;
@@ -777,7 +676,7 @@ $mobils = $stmt_mobil->fetchAll(PDO::FETCH_ASSOC);
     <script>
         // Header scroll effect
         window.addEventListener('scroll', function() {
-            const header = document.querySelector('.site-header');
+            const header = document.querySelector('header');
             if (window.scrollY > 50) {
                 header.classList.add('scrolled');
             } else {

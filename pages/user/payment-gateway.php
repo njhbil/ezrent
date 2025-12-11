@@ -13,6 +13,16 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+// If admin tries to access, redirect to admin bookings
+if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
+    if (isset($_GET['booking_id'])) {
+        header('Location: ../admin/bookings.php');
+        exit;
+    }
+    header('Location: ../admin/dashboard.php');
+    exit;
+}
+
 // Get booking ID from URL
 if (!isset($_GET['booking_id'])) {
     header('Location: my-bookings.php');
@@ -39,11 +49,13 @@ if (!$booking) {
     exit;
 }
 
-// Calculate total amount
+// Calculate duration
 $start_date = new DateTime($booking['start_date']);
 $end_date = new DateTime($booking['end_date']);
 $duration = $end_date->diff($start_date)->days + 1;
-$total_amount = (int)($duration * $booking['harga_per_hari']);
+
+// Use total_price from booking (already includes discount if any)
+$total_amount = (int)$booking['total_price'];
 
 // Initialize Midtrans API
 $midtrans = new MidtransAPI();
@@ -251,7 +263,7 @@ include 'header.php';
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-    background: #0a0e27;
+    background: #0a0a0a;
     color: #fff;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
@@ -259,7 +271,7 @@ body {
 main {
     min-height: calc(100vh - 120px);
     padding: 2rem;
-    background: linear-gradient(135deg, #0a0e27 0%, #16213e 100%);
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
 }
 
 .container { max-width: 900px; margin: 0 auto; }
@@ -307,9 +319,9 @@ main {
 }
 
 .alert-info {
-    background: rgba(100,150,255,0.1);
-    border: 1px solid rgba(100,150,255,0.2);
-    color: #6496ff;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(213,0,0,0.3);
+    color: rgba(255,255,255,0.7);
 }
 
 .methods-card {
@@ -500,6 +512,16 @@ main {
                 <label>Periode</label>
                 <span><?= $start_date->format('d M') ?> - <?= $end_date->format('d M Y') ?></span>
             </div>
+            <?php if (!empty($booking['discount_code']) && $booking['discount_amount'] > 0): ?>
+            <div class="summary-item" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; margin-top: 1rem;">
+                <label>Subtotal</label>
+                <span>Rp <?= number_format($booking['total_price'] + $booking['discount_amount'], 0, ',', '.') ?></span>
+            </div>
+            <div class="summary-item" style="color: #22c55e;">
+                <label><i class="fas fa-tag"></i> Diskon (<?= strtoupper($booking['discount_code']) ?>)</label>
+                <span>-Rp <?= number_format($booking['discount_amount'], 0, ',', '.') ?></span>
+            </div>
+            <?php endif; ?>
             <div class="total-box">
                  Rp <?= number_format($total_amount, 0, ',', '.') ?>
             </div>

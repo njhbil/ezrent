@@ -1,10 +1,13 @@
 <?php
 session_start();
-// 1. Cek Login Admin
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') { header("Location: ../login.php"); exit(); }
+
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') { 
+    header("Location: ../login.php"); 
+    exit(); 
+}
+
 require_once '../../php/config/database.php';
 
-// --- LOGIKA UPDATE STATUS (Manual) ---
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_status'])) {
     $id = $_POST['booking_id'];
     $new_status = $_POST['status'];
@@ -12,27 +15,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_status'])) {
     try {
         $pdo->beginTransaction();
         
-        // 1. Update Status Booking
-        // PERBAIKAN: Menghapus "updated_at = NOW()" karena kolom tidak ada di database
         $stmt = $pdo->prepare("UPDATE bookings SET status = ? WHERE id = ?");
         $stmt->execute([$new_status, $id]);
         
-        // 2. Update Status Kendaraan Otomatis
-        // Ambil ID kendaraan dari booking ini
         $vid = $pdo->query("SELECT vehicle_id FROM bookings WHERE id = $id")->fetchColumn();
         
         if ($vid) {
-            // Logika Status Kendaraan:
-            // Jika status booking 'confirmed', 'ready', atau 'active' -> Kendaraan 'disewa'
-            // Jika status lainnya (pending, completed, cancelled) -> Kendaraan 'tersedia'
             $v_status = ($new_status == 'confirmed' || $new_status == 'ready' || $new_status == 'active') ? 'disewa' : 'tersedia';
-            
             $pdo->prepare("UPDATE vehicles SET status = ? WHERE id = ?")->execute([$v_status, $vid]);
         }
         
         $pdo->commit();
-        
-        // Redirect agar refresh
         echo "<script>alert('Status pesanan berhasil diubah menjadi: " . ucfirst($new_status) . "'); window.location='bookings.php';</script>";
         
     } catch (Exception $e) {
@@ -41,7 +34,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_status'])) {
     }
 }
 
-// --- FILTER & PENCARIAN ---
 $filter_status = $_GET['status'] ?? '';
 $search = $_GET['search'] ?? '';
 
@@ -52,7 +44,10 @@ $sql = "SELECT b.*, u.nama_lengkap, u.email, u.nomor_telepon, u.foto_profil, v.n
         WHERE 1=1";
 
 $params = [];
-if (!empty($filter_status)) { $sql .= " AND b.status = ?"; $params[] = $filter_status; }
+if (!empty($filter_status)) { 
+    $sql .= " AND b.status = ?"; 
+    $params[] = $filter_status; 
+}
 if (!empty($search)) { 
     $sql .= " AND (b.kode_booking LIKE ? OR u.nama_lengkap LIKE ?)"; 
     $params[] = "%$search%"; 
@@ -64,7 +59,6 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// --- STATISTIK ---
 $stats = [
     'pending' => $pdo->query("SELECT COUNT(*) FROM bookings WHERE status = 'pending'")->fetchColumn(),
     'active' => $pdo->query("SELECT COUNT(*) FROM bookings WHERE status = 'active'")->fetchColumn(),
@@ -76,7 +70,6 @@ include 'header.php';
 ?>
 
 <style>
-    /* Styling */
     .card-stat { border:none; border-radius:12px; background:white; box-shadow:0 2px 10px rgba(0,0,0,0.03); transition:.3s; }
     .card-stat:hover { transform:translateY(-5px); }
     
@@ -87,18 +80,16 @@ include 'header.php';
     .table-custom td:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
     .table-custom td:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
 
-    /* Badge Warna */
     .badge-status { padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.75rem; display: inline-block; min-width: 90px; text-align: center; }
-    .st-pending { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; } /* Orange */
-    .st-confirmed { background: #eff6ff; color: #1d4ed8; border: 1px solid #dbeafe; } /* Biru */
-    .st-ready { background: #fef3c7; color: #d97706; border: 1px solid #fde68a; } /* Kuning */
-    .st-active { background: #f0fdf4; color: #15803d; border: 1px solid #dcfce7; } /* Hijau */
-    .st-completed { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; } /* Abu */
-    .st-cancelled { background: #fef2f2; color: #b91c1c; border: 1px solid #fee2e2; } /* Merah */
+    .st-pending { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; }
+    .st-confirmed { background: #eff6ff; color: #1d4ed8; border: 1px solid #dbeafe; }
+    .st-ready { background: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
+    .st-active { background: #f0fdf4; color: #15803d; border: 1px solid #dcfce7; }
+    .st-completed { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
+    .st-cancelled { background: #fef2f2; color: #b91c1c; border: 1px solid #fee2e2; }
 
     .booking-code { font-family: monospace; font-weight: 700; color: #4f46e5; background: #eef2ff; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; }
     
-    /* Status Options Styling */
     .status-options { display: flex; flex-direction: column; gap: 8px; }
     .status-option { position: relative; }
     .status-option input { position: absolute; opacity: 0; }
@@ -112,37 +103,47 @@ include 'header.php';
     .status-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
     .status-label { font-weight: 600; color: #1f2937; font-size: 0.9rem; }
     .status-desc { font-size: 0.75rem; color: #6b7280; margin-left: auto; }
+    
+    @media (max-width: 767px) {
+        .table-custom thead { display: none; }
+        .table-custom tbody tr { display: block; margin-bottom: 1rem; padding: 1rem; border-radius: 8px; }
+        .table-custom td { display: block; padding: 0.5rem 0; text-align: left; }
+        .table-custom td::before { content: attr(data-label); font-weight: 600; color: #6c757d; font-size: 0.75rem; display: block; margin-bottom: 0.25rem; }
+        .table-custom td:last-child { text-align: left; }
+        .card-stat { margin-bottom: 0.5rem; }
+        .card-stat p, .card-stat small { font-size: 0.75rem; }
+    }
 </style>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <div>
         <h2 class="fw-bold text-dark mb-0">Daftar Pesanan</h2>
-        <p class="text-muted mb-0">Kelola status pesanan secara manual.</p>
+        <p class="text-muted mb-0 d-none d-md-block">Kelola status pesanan secara manual.</p>
     </div>
 </div>
 
-<div class="row g-4 mb-4">
-    <div class="col-md-4">
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4">
         <div class="card card-stat p-3 border-start border-4 border-warning">
             <div class="d-flex justify-content-between align-items-center">
                 <div><small class="text-muted">Butuh Konfirmasi</small><h2 class="mb-0 fw-bold text-warning"><?php echo $stats['pending']; ?></h2></div>
-                <div class="bg-warning bg-opacity-10 p-3 rounded-circle text-warning"><i class="fas fa-exclamation-circle fa-lg"></i></div>
+                <div class="bg-warning bg-opacity-10 p-2 p-md-3 rounded-circle text-warning d-none d-sm-flex"><i class="fas fa-exclamation-circle"></i></div>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-6 col-md-4">
         <div class="card card-stat p-3 border-start border-4 border-success">
             <div class="d-flex justify-content-between align-items-center">
                 <div><small class="text-muted">Sedang Disewa</small><h2 class="mb-0 fw-bold text-success"><?php echo $stats['active']; ?></h2></div>
-                <div class="bg-success bg-opacity-10 p-3 rounded-circle text-success"><i class="fas fa-car-side fa-lg"></i></div>
+                <div class="bg-success bg-opacity-10 p-2 p-md-3 rounded-circle text-success d-none d-sm-flex"><i class="fas fa-car-side"></i></div>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-12 col-md-4">
         <div class="card card-stat p-3 border-start border-4 border-primary">
             <div class="d-flex justify-content-between align-items-center">
-                <div><small class="text-muted">Pendapatan (Completed)</small><h2 class="mb-0 fw-bold text-primary">Rp <?php echo number_format($stats['income']/1000, 0); ?>k</h2></div>
-                <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary"><i class="fas fa-wallet fa-lg"></i></div>
+                <div><small class="text-muted">Pendapatan</small><h2 class="mb-0 fw-bold text-primary">Rp <?php echo number_format($stats['income']/1000, 0); ?>k</h2></div>
+                <div class="bg-primary bg-opacity-10 p-2 p-md-3 rounded-circle text-primary d-none d-sm-flex"><i class="fas fa-wallet"></i></div>
             </div>
         </div>
     </div>

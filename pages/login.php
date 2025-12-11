@@ -1,13 +1,8 @@
 <?php 
-
-if (function_exists('isLoggedIn')) {
-    die("<strong style='color: red;'>PROBLEM:  functions.php sudah di-include sebelum login logic! <br>Hapus session_start() dari functions.php!</strong>");
-}
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Redirect jika sudah login
 if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
     header('Location: ' . ($_SESSION['role'] === 'admin' ? 'admin/dashboard.php' : 'user/dashboard.php'));
     exit;
@@ -17,7 +12,6 @@ $error_message = '';
 $success_message = '';
 $email_value = '';
 
-// Cek pesan sukses dari Register
 if (isset($_GET['status']) && $_GET['status'] === 'registered') {
     $success_message = "Pendaftaran berhasil! Silakan login dengan akun Anda.";
 }
@@ -29,7 +23,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     $email_value = htmlspecialchars($email);
     
-    // Validasi input kosong
     if (empty($email)) {
         $error_message = "Email harus diisi";
     } elseif (empty($password)) {
@@ -38,18 +31,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             require_once '../php/config/database.php';
             
-            // Query user berdasarkan email
-            $stmt = $pdo->prepare("SELECT id, nama_lengkap, email, role, is_verified, foto_profil, password FROM users WHERE email = ?  LIMIT 1");
+            $stmt = $pdo->prepare("SELECT id, nama_lengkap, email, role, is_verified, foto_profil, password FROM users WHERE email = ? LIMIT 1");
             $stmt->execute([$email]);
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
             
             if ($result) {
-                // Verifikasi password
                 if (password_verify($password, $result['password'])) {
-                    // Password benar - Login berhasil
                     session_regenerate_id(true);
                     
-                    // Set session variables
                     $_SESSION['user_id'] = $result['id'];
                     $_SESSION['nama_lengkap'] = $result['nama_lengkap'];
                     $_SESSION['email'] = $result['email'];
@@ -57,39 +46,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['is_verified'] = $result['is_verified'];
                     $_SESSION['foto_profil'] = $result['foto_profil'] ?? null;
                     
-                    // Remember me functionality
                     if ($remember_me) {
                         $cookie_token = bin2hex(random_bytes(32));
                         setcookie('remember_token', $cookie_token, time() + (30 * 24 * 60 * 60), '/', '', true, true);
                     }
                     
-                    // Redirect sesuai role
                     if ($result['role'] === 'admin') {
                         header("Location: admin/dashboard.php");
                     } else {
                         header("Location: user/dashboard.php");
                     }
                     exit;
-                    
                 } else {
-                    // Password salah
                     $error_message = "Email atau password salah";
                 }
             } else {
-                // User tidak ditemukan
                 $error_message = "Email atau password salah";
             }
-            
         } catch (PDOException $e) {
-            // Error database
             $error_message = "Terjadi kesalahan sistem. Silakan coba lagi.";
-            error_log("Login Database Error: " . $e->getMessage());
+            error_log("Login Error: " . $e->getMessage());
         }
     }
 }
 
 $page_title = "Login - EzRent";
-
 ?>
 <!DOCTYPE html>
 <html lang="id">

@@ -25,6 +25,7 @@ include 'header.php';
 <div class="card shadow">
     <div class="card-header bg-white fw-bold">Transaksi Terakhir</div>
     <div class="card-body">
+        <div class="table-responsive">
         <table class="table table-hover">
             <thead><tr><th>Kode</th><th>Tanggal</th><th>Nominal</th><th>Status</th></tr></thead>
             <tbody>
@@ -38,6 +39,7 @@ include 'header.php';
                 <?php endforeach; ?>
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 

@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// 1. Cek Login Admin
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: ../login.php");
     exit();
@@ -9,11 +8,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
 require_once '../../php/config/database.php';
 
-// --- FUNGSI HELPER ---
 function uploadImage($file) {
     $targetDir = "../../assets/images/vehicles/";
     
-    // Buat folder jika belum ada
     if (!file_exists($targetDir)) {
         mkdir($targetDir, 0777, true);
     }
@@ -22,15 +19,12 @@ function uploadImage($file) {
     $targetFilePath = $targetDir . $fileName;
     $fileType = strtolower(pathinfo($targetFilePath, PATHINFO_EXTENSION));
     
-    // Validasi Ekstensi
     $allowTypes = array('jpg', 'png', 'jpeg', 'gif', 'webp');
     if (in_array($fileType, $allowTypes)) {
-        // Validasi Ukuran (Max 5MB)
         if ($file["size"] > 5000000) {
             return ['status' => false, 'msg' => 'Ukuran file terlalu besar (Max 5MB).'];
         }
 
-        // Rename file agar unik (mencegah bentrok nama)
         $newFileName = uniqid() . '.' . $fileType;
         $targetFilePath = $targetDir . $newFileName;
 
@@ -44,14 +38,10 @@ function uploadImage($file) {
     }
 }
 
-// --- LOGIKA HANDLING REQUEST ---
-
-// A. Handle Tambah Kendaraan (Create)
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_vehicle'])) {
     
-    $imageName = 'default.jpg'; // Gambar default jika user tidak upload
+    $imageName = 'default.jpg';
 
-    // Cek apakah ada file yang diupload
     if (!empty($_FILES["image"]["name"])) {
         $uploadResult = uploadImage($_FILES["image"]);
         if ($uploadResult['status']) {
@@ -61,7 +51,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_vehicle'])) {
         }
     }
 
-    // Simpan nama file dalam format JSON (sesuai struktur DB Anda)
     $images_json = json_encode([$imageName]);
 
     try {
@@ -80,35 +69,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_vehicle'])) {
     }
 }
 
-// B. Handle Hapus Kendaraan (Delete)
 if (isset($_GET['delete'])) {
     $id = $_GET['delete'];
     
-    // Ambil info gambar dulu untuk dihapus fisiknya
     $stmt = $pdo->prepare("SELECT images FROM vehicles WHERE id = ?");
     $stmt->execute([$id]);
     $v = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($v) {
-        // Decode JSON gambar
         $imgs = json_decode($v['images'], true);
         if (!empty($imgs)) {
             foreach ($imgs as $img) {
-                // Hapus file jika bukan default.jpg
                 if ($img !== 'default.jpg' && file_exists("../../assets/images/vehicles/" . $img)) {
                     unlink("../../assets/images/vehicles/" . $img);
                 }
             }
         }
 
-        // Hapus record dari database
         $pdo->prepare("DELETE FROM vehicles WHERE id = ?")->execute([$id]);
         echo "<script>alert('Kendaraan berhasil dihapus!'); window.location='vehicles.php';</script>";
         exit();
     }
 }
 
-// C. Ambil Data (Read)
 $vehicles = $pdo->query("SELECT * FROM vehicles ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
 
 $page_title = "Manajemen Kendaraan";

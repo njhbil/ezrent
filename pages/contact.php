@@ -45,108 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $is_logged_in) {
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; background-color: #000 !important; }
         body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #000 !important; color: #fff; margin: 0 !important; padding-top: env(safe-area-inset-top); }
-        header.site-header { padding-top: env(safe-area-inset-top); }
         
-        /* Header */
-        .site-header {
-            background: transparent;
-            padding: 0.75rem 0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            transition: all 0.3s ease;
-        }
-        .site-header.scrolled {
-            background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(10px);
-        }
-        .header-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .logo { 
-            font-size: 1.75rem;
-            color: #fff; 
-            text-decoration: none; 
-            display: flex;
-            align-items: baseline;
-            letter-spacing: -0.03em;
-        }
-        .logo-ez { font-weight: 300; color: #fff; }
-        .logo-rent { font-weight: 700; color: #fff; }
-        .logo-accent { color: #d50000; font-weight: 700; }
-        
-        .nav-links { 
-            display: flex; 
-            margin-top: 15px;
-            gap: 2.5rem; 
-            list-style: none;
-            align-items: center;
-        }
-        .nav-links a {
-            color: rgba(255,255,255,0.8);
-            text-decoration: none;
-            font-weight: 300;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            padding: 0.5rem 0;
-            position: relative;
-            transition: color 0.3s ease;
-        }
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 1px;
-            background: white;
-            transition: width 0.3s ease;
-        }
-        .nav-links a:hover::after, .nav-links a.active::after { width: 100%; }
-        .nav-links a:hover, .nav-links a.active { color: #fff; }
-        
-        .auth-buttons { 
-            display: flex; 
-            gap: 1.5rem;
-            align-items: center;
-        }
-        .btn-login {
-            color: rgba(255,255,255,0.8);
-            text-decoration: none;
-            font-weight: 300;
-            padding: 0.5rem 1rem;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            font-size: 0.85rem;
-        }
-        .btn-login:hover { color: #fff; }
-        .btn-register { 
-            background: white;
-            color: black;
-            text-decoration: none;
-            font-weight: 500;
-            padding: 0.6rem 1.75rem;
-            border: 2px solid white;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
-        }
-        .btn-register:hover { 
-            background: transparent;
-            color: white;
-        }
         
         /* Hero Section */
         .hero {
@@ -158,18 +57,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $is_logged_in) {
             overflow: hidden;
             padding-top: 0;
         }
-        .site-header {
-            position: absolute !important;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 120;
-            background: transparent !important;
-            box-shadow: none !important;
-        }
-        .header-container, .navbar { background: transparent !important; }
-        
-        <?php if (!$is_logged_in): ?>
         .hero-bg {
             position: absolute;
             top: 0;
@@ -184,21 +71,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $is_logged_in) {
             z-index: 1;
             will-change: auto;
         }
-        <?php else: ?>
-        .hero-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            background-color: #000;
-            background-image: url('https://images.unsplash.com/photo-1534536281715-e28d76689b4d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
-            background-position: center;
-            background-size: cover;
-            background-repeat: no-repeat;
-            z-index: 1;
-        }
-        <?php endif; ?>
         
         .hero-overlay {
             position: absolute;
@@ -988,7 +860,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $is_logged_in) {
         @media (max-width: 768px) {
             html, body { background-color: #000 !important; height: 100% !important; }
             body { margin: 0 !important; padding: 0 !important; padding-top: env(safe-area-inset-top) !important; }
-            .site-header, header.site-header {
+            header {
                 position: fixed !important;
                 top: 0 !important;
                 left: 0 !important;
@@ -998,7 +870,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $is_logged_in) {
                 box-shadow: none !important;
                 padding-top: env(safe-area-inset-top) !important;
             }
-            .header-container, .navbar { background: transparent !important; }
             .hero { padding-top: 0 !important; }
             .hero-bg { position: fixed !important; top: 0 !important; height: 100vh !important; background-color: #000 !important; }
         }
@@ -1355,7 +1226,7 @@ document.querySelectorAll('.contact-card').forEach(card => {
 });
 
 // Header scroll effect
-const siteHeader = document.querySelector('.site-header') || document.querySelector('header');
+const siteHeader = document.querySelector('header');
 window.addEventListener('scroll', () => {
     if (!siteHeader) return;
     if (window.scrollY > 50) {

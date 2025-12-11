@@ -1,40 +1,26 @@
 <?php
 session_start();
 
-// 1. Cek Keamanan Login Admin
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: ../login.php");
     exit();
 }
 
-// 2. Koneksi Database
 require_once '../../php/config/database.php';
 
-// 3. LOGIKA PHP: MENGAMBIL DATA STATISTIK REAL-TIME
 try {
-    // A. Card Statistik Utama
-    // Total Kendaraan
     $total_vehicles = $pdo->query("SELECT COUNT(*) FROM vehicles")->fetchColumn();
-    
-    // Total Pesanan (Semua status)
     $total_bookings = $pdo->query("SELECT COUNT(*) FROM bookings")->fetchColumn();
-    
-    // Pesanan Pending (Perlu Tindakan)
     $pending_bookings = $pdo->query("SELECT COUNT(*) FROM bookings WHERE status = 'pending'")->fetchColumn();
-    
-    // Total User
     $total_users = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'user'")->fetchColumn();
 
-    // B. Statistik Keuangan (Hanya yang statusnya 'active' atau 'completed')
     $income_query = $pdo->query("SELECT SUM(total_price) FROM bookings WHERE status IN ('active', 'completed')");
     $total_income = $income_query->fetchColumn() ?: 0;
 
-    // C. Data untuk Grafik Status Kendaraan
     $stat_tersedia = $pdo->query("SELECT COUNT(*) FROM vehicles WHERE status = 'tersedia'")->fetchColumn();
     $stat_disewa = $pdo->query("SELECT COUNT(*) FROM vehicles WHERE status = 'disewa'")->fetchColumn();
     $stat_maintenance = $pdo->query("SELECT COUNT(*) FROM vehicles WHERE status = 'maintenance'")->fetchColumn();
 
-    // D. Mengambil 5 Pesanan Terbaru
     $stmt = $pdo->query("
         SELECT 
             b.id, b.kode_booking, b.start_date, b.end_date, b.total_price, b.status,

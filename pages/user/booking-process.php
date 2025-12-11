@@ -91,16 +91,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $total = $days * $vehicle['harga_per_hari'];
                         $kode = 'EZR-' . date('Ymd') . '-' . rand(1000, 9999);
                         
+                        // Process discount if provided
+                        $discount_code = strtoupper(trim($_POST['discount_code'] ?? ''));
+                        $discount_amount = 0;
+                        $discount_id = null;
+                        
+                        if (!empty($discount_code)) {
+                            $stmt_disc = $pdo->prepare("
+                                SELECT * FROM discount_codes 
+                                WHERE code = ? AND is_active = 1 
+                                AND (start_date IS NULL OR start_date <= NOW())
+                                AND (end_date IS NULL OR end_date > NOW())
+                            ");
+                            $stmt_disc->execute([$discount_code]);
+                            $discount = $stmt_disc->fetch(PDO::FETCH_ASSOC);
+                            
+                            if ($discount) {
+                                // Check minimum amount
+                                if ($total >= $discount['min_booking_amount']) {
+                                    // Check usage limit
+                                    if (!$discount['usage_limit'] || $discount['used_count'] < $discount['usage_limit']) {
+                                        // Calculate discount
+                                        if ($discount['discount_type'] === 'percentage') {
+                                            $discount_amount = ($total * $discount['discount_value']) / 100;
+                                        } else {
+                                            $discount_amount = $discount['discount_value'];
+                                        }
+                                        
+                                        // Apply max discount limit
+                                        if ($discount['max_discount_amount'] && $discount_amount > $discount['max_discount_amount']) {
+                                            $discount_amount = $discount['max_discount_amount'];
+                                        }
+                                        
+                                        // Ensure discount doesn't exceed total
+                                        if ($discount_amount > $total) {
+                                            $discount_amount = $total;
+                                        }
+                                        
+                                        $discount_id = $discount['id'];
+                                        $total = $total - $discount_amount;
+                                        
+                                        // Update discount usage count
+                                        $pdo->prepare("UPDATE discount_codes SET used_count = used_count + 1 WHERE id = ?")->execute([$discount_id]);
+                                    }
+                                }
+                            }
+                        }
+                        
                         try {
                             $pdo->beginTransaction();
                             
-                            // Insert booking with KTP info
-                            $sql = "INSERT INTO bookings (user_id, vehicle_id, kode_booking, start_date, end_date, total_days, total_price, pickup_location, return_location, ktp_number, ktp_image, status, notes, created_at) 
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, NOW())";
+                            // Insert booking with KTP info and discount
+                            $sql = "INSERT INTO bookings (user_id, vehicle_id, kode_booking, start_date, end_date, total_days, total_price, discount_code, discount_amount, pickup_location, return_location, ktp_number, ktp_image, status, notes, created_at) 
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, NOW())";
                             $stmt = $pdo->prepare($sql);
-                            $stmt->execute([$user_id, $v_id, $kode, $start_date, $end_date, $days, $total, $pickup, $return_loc, $ktp_number, $ktp_image, $notes]);
+                            $stmt->execute([$user_id, $v_id, $kode, $start_date, $end_date, $days, $total, $discount_code ?: null, $discount_amount, $pickup, $return_loc, $ktp_number, $ktp_image, $notes]);
                             
                             $booking_id = $pdo->lastInsertId();
+                            
+                            // Record discount usage if applied
+                            if ($discount_id && $discount_amount > 0) {
+                                $pdo->prepare("INSERT INTO discount_usage (discount_id, user_id, booking_id, discount_amount) VALUES (?, ?, ?, ?)")
+                                    ->execute([$discount_id, $user_id, $booking_id, $discount_amount]);
+                            }
                             
                             $pdo->commit();
                             
@@ -209,9 +262,10 @@ include 'header.php';
         background: rgba(255,255,255,0.05);
         border: 1px solid rgba(255,255,255,0.15);
         border-radius: 8px;
-        color: #fff;
+        color: #fff !important;
         font-size: 1rem;
         transition: all 0.3s ease;
+        -webkit-text-fill-color: #fff !important;
     }
     
     .form-control:focus {
@@ -221,7 +275,8 @@ include 'header.php';
     }
     
     .form-control::placeholder {
-        color: rgba(255,255,255,0.4);
+        color: rgba(255,255,255,0.4) !important;
+        -webkit-text-fill-color: rgba(255,255,255,0.4) !important;
     }
     
     .form-row {
@@ -494,6 +549,22 @@ include 'header.php';
                         <textarea name="notes" class="form-control" placeholder="Contoh: Butuh child seat, pengantaran ke hotel, dll..."><?php echo $_POST['notes'] ?? ''; ?></textarea>
                     </div>
                     
+                    <!-- Discount Code Section -->
+                    <div style="padding: 1.5rem; background: rgba(213,0,0,0.05); border-radius: 8px; border: 1px dashed rgba(213,0,0,0.3); margin-bottom: 1.5rem;">
+                        <h4 style="color: #ff5252; font-size: 1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-tag"></i> Kode Diskon (Opsional)
+                        </h4>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label>Punya kode promo? Masukkan di sini</label>
+                            <input type="text" name="discount_code" id="discount_code" class="form-control" 
+                                   placeholder="Contoh: WELCOME10, HEMAT50K" style="text-transform: uppercase;"
+                                   value="<?php echo $_POST['discount_code'] ?? ''; ?>">
+                            <small style="color: rgba(255,255,255,0.5); display: block; margin-top: 0.25rem;">
+                                Kode diskon akan divalidasi saat pemesanan dibuat
+                            </small>
+                        </div>
+                    </div>
+                    
                     <!-- KTP Section -->
                     <div style="padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 1.5rem;">
                         <h4 style="color: #fff; font-size: 1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
@@ -583,10 +654,18 @@ include 'header.php';
                             <span>Durasi sewa</span>
                             <span id="duration">0 hari</span>
                         </div>
+                        <div class="price-row" id="discountRow" style="display: none; color: #22c55e; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; margin-top: 0.5rem;">
+                            <span id="discountLabel">Diskon</span>
+                            <span id="discountAmount">-Rp 0</span>
+                        </div>
                         <div class="price-row total">
-                            <span>Total Biaya</span>
+                            <span>Total Bayar</span>
                             <span class="amount" id="totalPrice">Rp 0</span>
                         </div>
+                        <button type="button" id="applyDiscountBtn" class="btn-submit" style="margin-top: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);" onclick="validateDiscount()">
+                            <i class="fas fa-tag"></i> Terapkan Kode Diskon
+                        </button>
+                        <div id="discountMessage" style="margin-top: 0.5rem; font-size: 0.85rem;"></div>
                     </div>
                 </div>
             </div>
@@ -601,6 +680,14 @@ const startInput = document.getElementById('start_date');
 const endInput = document.getElementById('end_date');
 const durationEl = document.getElementById('duration');
 const totalEl = document.getElementById('totalPrice');
+const discountInput = document.getElementById('discount_code');
+const discountRow = document.getElementById('discountRow');
+const discountLabel = document.getElementById('discountLabel');
+const discountAmount = document.getElementById('discountAmount');
+const discountMessage = document.getElementById('discountMessage');
+
+let appliedDiscount = 0;
+let discountCode = '';
 
 function calculateTotal() {
     const start = new Date(startInput.value);
@@ -609,13 +696,66 @@ function calculateTotal() {
     if (startInput.value && endInput.value && end >= start) {
         const diffTime = Math.abs(end - start);
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-        const total = diffDays * pricePerDay;
+        const subtotal = diffDays * pricePerDay;
+        const total = subtotal - appliedDiscount;
         
         durationEl.textContent = diffDays + ' hari';
         totalEl.textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(total);
+        
+        return subtotal;
     } else {
         durationEl.textContent = '0 hari';
         totalEl.textContent = 'Rp 0';
+        return 0;
+    }
+}
+
+async function validateDiscount() {
+    const code = discountInput.value.trim().toUpperCase();
+    
+    if (!code) {
+        discountMessage.innerHTML = '<span style="color: #ef4444;">⚠️ Masukkan kode diskon terlebih dahulu</span>';
+        return;
+    }
+    
+    const subtotal = calculateTotal();
+    if (subtotal <= 0) {
+        discountMessage.innerHTML = '<span style="color: #ef4444;">⚠️ Pilih tanggal sewa terlebih dahulu</span>';
+        return;
+    }
+    
+    discountMessage.innerHTML = '<span style="color: #3b82f6;"><i class="fas fa-spinner fa-spin"></i> Memvalidasi kode...</span>';
+    
+    try {
+        const formData = new FormData();
+        formData.append('code', code);
+        formData.append('booking_amount', subtotal);
+        
+        const response = await fetch('../../php/api/validate-discount.php', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            appliedDiscount = result.discount_amount;
+            discountCode = result.discount_code;
+            
+            discountRow.style.display = 'flex';
+            discountLabel.innerHTML = '<i class="fas fa-tag"></i> Diskon (' + result.discount_code + ')';
+            discountAmount.textContent = '-Rp ' + new Intl.NumberFormat('id-ID').format(result.discount_amount);
+            discountMessage.innerHTML = '<span style="color: #22c55e;">✅ ' + result.message + ' Hemat Rp ' + new Intl.NumberFormat('id-ID').format(result.discount_amount) + '!</span>';
+            
+            calculateTotal();
+        } else {
+            appliedDiscount = 0;
+            discountRow.style.display = 'none';
+            discountMessage.innerHTML = '<span style="color: #ef4444;">❌ ' + result.message + '</span>';
+            calculateTotal();
+        }
+    } catch (error) {
+        discountMessage.innerHTML = '<span style="color: #ef4444;">❌ Terjadi kesalahan saat validasi</span>';
     }
 }
 
@@ -624,10 +764,19 @@ startInput.addEventListener('change', function() {
     if (endInput.value && endInput.value < this.value) {
         endInput.value = this.value;
     }
+    appliedDiscount = 0;
+    discountRow.style.display = 'none';
+    discountMessage.innerHTML = '';
     calculateTotal();
 });
 
-endInput.addEventListener('change', calculateTotal);
+endInput.addEventListener('change', function() {
+    appliedDiscount = 0;
+    discountRow.style.display = 'none';
+    discountMessage.innerHTML = '';
+    calculateTotal();
+});
+
 calculateTotal();
 
 // KTP File Preview
