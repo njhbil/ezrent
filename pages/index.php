@@ -36,6 +36,7 @@ try {
 }
 
 $page_title = "EzRent - Sewa Kendaraan Mudah & Terpercaya";
+
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -231,7 +232,7 @@ window.addEventListener('scroll', function() {
         
         <div class="hero-content" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; display: flex; align-items: center; justify-content: flex-start; padding-left: 10%;">
             <div class="hero-text" style="text-align: left; color: white; max-width: 600px;">
-                <h1 class="hero-title" style="font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 300; line-height: 1.2; margin-bottom: 2rem; letter-spacing: -0.02em;">
+                <h1 class="hero-title" style="font-size: clamp(4.5rem, 5vw, 3.5rem); font-weight: 300; line-height: 1.2; margin-bottom: 2rem; letter-spacing: -0.02em;">
                     Kemewahan dan Kenyamanan<br>
                     <span style="font-weight: 600;">dalam Setiap Perjalanan</span>
                 </h1>
@@ -252,7 +253,7 @@ window.addEventListener('scroll', function() {
         <div style="position: absolute; top: -100px; right: -100px; width: 300px; height: 300px; border: 1px dashed rgba(213,0,0,0.1); border-radius: 50%; pointer-events: none;"></div>
         <div style="position: absolute; bottom: -80px; left: -80px; width: 250px; height: 250px; border: 1px dashed rgba(0,0,0,0.05); border-radius: 50%; pointer-events: none;"></div>
         
-        <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 1;">
+        <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 1; margin-top: 20px;">
             <div style="text-align: center; margin-bottom: 4rem;">
                 <h2 style="font-size: clamp(2rem, 4vw, 3rem); font-weight: 500; color: #000; margin-bottom: 1rem; letter-spacing: -0.02em;">Mengapa Memilih EzRent?</h2>
                 <p style="font-size: 1.1rem; color: #6b7280; font-weight: 300;">Pengalaman sewa kendaraan yang tak tertandingi</p>
@@ -497,6 +498,13 @@ window.addEventListener('scroll', function() {
                 gap: 1.5rem !important;
 
             }
+            .hero-title {
+                font-size: 2.8rem !important;
+                line-height: 1.5 !important;
+            }
+            .hero-title span {
+                font-size: 1.2em !important;
+            }
             
         }
         
@@ -580,7 +588,6 @@ document.addEventListener('DOMContentLoaded', function() {
         threshold: 0.1,
         rootMargin: '0px 0px -50px 0px'
     };
-
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -588,7 +595,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }, observerOptions);
-
+        
     // Observe elements
     document.querySelectorAll('.section-title, .category-label, .feature-card, .cta-area').forEach(el => {
         observer.observe(el);
@@ -639,14 +646,8 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             scrollIndicator.classList.remove('visible');
         }
-
-        // Parallax for hero video
-        const heroVideo = document.querySelector('.hero-video');
-        if (heroVideo && scrolled < window.innerHeight) {
-            heroVideo.style.transform = 'scale(' + (1 + scrolled * 0.0003) + ')';
-        }
-    });
-});
+    }); // <-- tutup window.addEventListener
+}); // <-- tutup DOMContentLoaded
 </script>
 
 <footer style="background: #000; color: #fff; padding: 3rem 20px; text-align: center;">

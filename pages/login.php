@@ -191,24 +191,12 @@ $page_title = "Login - EzRent";
             margin-top: 1rem;
         }
         
-        @media (min-width: 769px) {
-            .navbar {
-                display: none !important;
-            }
-        }
         @media (max-width: 768px) {
-            .mobile-logo-header {
-                margin-top: 3.5rem !important;
-            }
-            .mobile-logo-header .visual-logo-text {
-                margin-top: 0.5rem !important;
-            }
-            .visual-content {
-                padding-top: 6.5rem !important;
-                padding-bottom: 2.5rem !important;
-            }
             .login-header { display: none !important; }
-        }
+            .login-visual .visual-logo, .login-visual .visual-tagline { display: none !important; }
+            }
+            
+        
         
         /* Decorative elements */
         .decor-circle {

@@ -240,7 +240,36 @@ if (strpos($_SERVER['PHP_SELF'], '/php/pages/') !== false) {
 
             .logo {
                 font-size: 1.5rem;
+    
             }
+            .nav-links a {
+                font-size: 1rem;
+        }
+    }
+        @media (max-width: 950px) {
+                    .navbar {
+                    justify-content: center !important;
+                    position: relative;
+                }
+                .logo {
+                    position: absolute;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    margin: 0 !important;
+                    text-align: center;
+                }
+                .mobile-menu-btn {
+                    position: absolute;
+                    left: 10px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                }
+                .auth-buttons {
+                    position: absolute;
+                    right: 10px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                }
         }
     </style>
 </head>

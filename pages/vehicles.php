@@ -116,14 +116,14 @@ $mobils = $stmt_mobil->fetchAll(PDO::FETCH_ASSOC);
         }
         .hero h1 {
             color: #fff;
-            font-size: clamp(2rem, 4vw, 3rem);
-            font-weight: 300;
+            font-size: 4rem;
+            font-weight: 280;
             margin-bottom: 1rem;
         }
         .hero h1 strong { font-weight: 700; color: #d50000; }
         .hero p {
             color: rgba(255,255,255,0.8);
-            font-size: 1.1rem;
+            font-size: 1.5rem;
             max-width: 600px;
             margin: 0 auto;
         }
@@ -364,6 +364,14 @@ $mobils = $stmt_mobil->fetchAll(PDO::FETCH_ASSOC);
             object-fit: cover;
             transition: transform 0.5s ease;
         }
+        @media (max-width: 768px) {
+        .vehicle-image {
+         aspect-ratio: 4/3 !important;   /* Lebih proporsional */
+        min-height: 160px;
+        max-height: 220px;
+
+        }
+        }
         .vehicle-card:hover .vehicle-image img {
             transform: scale(1.1);
         }
@@ -439,6 +447,7 @@ $mobils = $stmt_mobil->fetchAll(PDO::FETCH_ASSOC);
             color: rgba(255,255,255,0.6);
         }
         .btn-book {
+            width: 100px;
             background: #d50000;
             color: #fff;
             border: none;
@@ -526,14 +535,20 @@ $mobils = $stmt_mobil->fetchAll(PDO::FETCH_ASSOC);
             cursor: pointer;
         }
         
+        .nav-links, .auth-buttons {
+            transition: opacity 0.3s ease;
+            margin-top: 10px;
+        }
+
         @media (max-width: 768px) {
             .nav-links, .auth-buttons { display: none; }
             .mobile-menu-btn { display: block; }
             .vehicles-grid { grid-template-columns: 1fr; }
             .filter-buttons { gap: 0.5rem; }
             .filter-btn { padding: 0.6rem 1.25rem; font-size: 0.8rem; }
-        }
-    </style>
+            .hero h1 { font-size: 3rem !important;  margin: 20px !important; } 
+            .hero p { font-size: 1.2rem !important; margin: 20px !important;}    }
+    </style> 
 </head>
 <body class="page-vehicles">
     <?php include '../php/includes/header.php'; ?>
@@ -611,7 +626,7 @@ $mobils = $stmt_mobil->fetchAll(PDO::FETCH_ASSOC);
                                 <?php if ($is_logged_in): ?>
                                 <a href="user/booking-process.php?vehicle_id=<?php echo $motor['id']; ?>" class="btn-book">Pesan</a>
                                 <?php else: ?>
-                                <a href="login.php?redirect=vehicles" class="btn-book">Login untuk Pesan</a>
+                                <a href="login.php?redirect=vehicles" class="btn-book">Login</a>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -657,7 +672,7 @@ $mobils = $stmt_mobil->fetchAll(PDO::FETCH_ASSOC);
                                 <?php if ($is_logged_in): ?>
                                 <a href="user/booking-process.php?vehicle_id=<?php echo $mobil['id']; ?>" class="btn-book">Pesan</a>
                                 <?php else: ?>
-                                <a href="login.php?redirect=vehicles" class="btn-book">Login untuk Pesan</a>
+                                <a href="login.php?redirect=vehicles" class="btn-book">Login</a>
                                 <?php endif; ?>
                             </div>
                         </div>

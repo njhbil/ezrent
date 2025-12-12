@@ -13,7 +13,13 @@ $page_title = "Tentang Kami - EzRent";
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; color: #000; }
         
-        /* Hero dengan Background Image */
+
+        .nav-links, .auth-buttons {
+            transition: opacity 0.3s ease;
+            margin-top: 10px;
+
+        }
+        /* Hero Section */
         .hero {
             position: relative;
             height: 100vh;
@@ -1205,6 +1211,29 @@ $page_title = "Tentang Kami - EzRent";
             .stats-container { grid-template-columns: repeat(2, 1fr); }
             .scroll-progress { display: none; }
         }
+        @media (max-width: 768px) {
+        .hero-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        transform: none !important;
+        background-position: center !important;
+        background-size: cover !important;
+        z-index: 1;
+    }
+}
+    .hero-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;
+            background-attachment: fixed;
+            z-index: 1;
+        }
     </style>
 </head>
 <body>
@@ -1303,6 +1332,25 @@ $page_title = "Tentang Kami - EzRent";
         </div>
         
         <div class="team-grid">
+
+        <div class="team-card slide-in-up">
+                <div class="photo-wrapper">
+                    <div class="photo-ring"></div>
+                    <div class="photo">
+                        <img src="../assets/images/profiles/Nabil Akbar.png" alt="Nabil Akbar">
+                    </div>
+                </div>
+                <div class="member-info">
+                    <h3>Nabil Akbar</h3>
+                    <span class="role">Team Member</span>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+                        <a href="#" class="social-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg></a>
+                        <a href="#" class="social-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>
+                    </div>
+                </div>
+            </div>
+            
             <div class="team-card slide-in-left">
                 <div class="photo-wrapper">
                     <div class="photo-ring"></div>
@@ -1321,23 +1369,6 @@ $page_title = "Tentang Kami - EzRent";
                 </div>
             </div>
             
-            <div class="team-card slide-in-up">
-                <div class="photo-wrapper">
-                    <div class="photo-ring"></div>
-                    <div class="photo">
-                        <img src="../assets/images/profiles/Nabil Akbar.png" alt="Nabil Akbar">
-                    </div>
-                </div>
-                <div class="member-info">
-                    <h3>Nabil Akbar</h3>
-                    <span class="role">Team Member</span>
-                    <div class="social-links">
-                        <a href="#" class="social-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
-                        <a href="#" class="social-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg></a>
-                        <a href="#" class="social-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>
-                    </div>
-                </div>
-            </div>
             
             <div class="team-card slide-in-up">
                 <div class="photo-wrapper">
@@ -1458,77 +1489,69 @@ document.querySelectorAll('.slide-in-left, .slide-in-right, .slide-in-up').forEa
     slideObserver.observe(el);
 });
 
-// Scroll Color Animation - berubah warna saat di viewport tengah
-const colorObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            // Add color with delay for stagger effect
-            const cards = document.querySelectorAll('.scroll-color');
-            cards.forEach((card, index) => {
-                setTimeout(() => {
-                    if (isInViewport(card)) {
-                        card.classList.add('color-active');
-                    }
-                }, index * 100);
-            });
-        }
-    });
-}, { threshold: 0.3 });
+// // Scroll Color Animation - berubah warna saat di viewport tengah
+// const colorObserver = new IntersectionObserver((entries) => {
+//     entries.forEach(entry => {
+//         if (entry.isIntersecting) {
+//             // Add color with delay for stagger effect
+//             const cards = document.querySelectorAll('.scroll-color');
+//             cards.forEach((card, index) => {
+//                 setTimeout(() => {
+//                     if (isInViewport(card)) {
+//                         card.classList.add('color-active');
+//                     }
+//                 }, index * 100);
+//             });
+//         }
+//     });
+// }, { threshold: 0.3 });
 
 // Check if element is in viewport center
-function isInViewport(el) {
-    const rect = el.getBoundingClientRect();
-    const windowHeight = window.innerHeight;
-    return rect.top < windowHeight * 0.7 && rect.bottom > windowHeight * 0.3;
-}
+// function isInViewport(el) {
+//     const rect = el.getBoundingClientRect();
+//     const windowHeight = window.innerHeight;
+//     return rect.top < windowHeight * 0.7 && rect.bottom > windowHeight * 0.3;
+// }
 
 // Scroll-based color toggle
-let scrollColorElements = document.querySelectorAll('.scroll-color');
-window.addEventListener('scroll', () => {
-    scrollColorElements.forEach(el => {
-        if (isInViewport(el)) {
-            el.classList.add('color-active');
-        } else {
-            el.classList.remove('color-active');
-        }
-    });
-});
+// let scrollColorElements = document.querySelectorAll('.scroll-color');
+// window.addEventListener('scroll', () => {
+//     scrollColorElements.forEach(el => {
+//         if (isInViewport(el)) {
+//             el.classList.add('color-active');
+//         } else {
+//             el.classList.remove('color-active');
+//         }
+//     });
+// });
 
 // Scroll Progress Bar
-window.addEventListener('scroll', () => {
-    const scrollTop = window.scrollY;
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    const scrollPercent = (scrollTop / docHeight) * 100;
-    document.querySelector('.scroll-progress-bar').style.height = scrollPercent + '%';
-});
+// window.addEventListener('scroll', () => {
+//     const scrollTop = window.scrollY;
+//     const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+//     const scrollPercent = (scrollTop / docHeight) * 100;
+//     document.querySelector('.scroll-progress-bar').style.height = scrollPercent + '%';
+// });
 
-// Parallax effect on hero
-window.addEventListener('scroll', () => {
-    const scrolled = window.pageYOffset;
-    const hero = document.querySelector('.hero-bg');
-    if (hero && scrolled < window.innerHeight) {
-        hero.style.transform = 'translateY(' + (scrolled * 0.4) + 'px)';
-    }
-});
 
 // Mouse move effect on team cards
-document.querySelectorAll('.team-card').forEach(card => {
-    card.addEventListener('mousemove', (e) => {
-        const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
-        const rotateX = (y - centerY) / 10;
-        const rotateY = (centerX - x) / 10;
+// document.querySelectorAll('.team-card').forEach(card => {
+//     card.addEventListener('mousemove', (e) => {
+//         const rect = card.getBoundingClientRect();
+//         const x = e.clientX - rect.left;
+//         const y = e.clientY - rect.top;
+//         const centerX = rect.width / 2;
+//         const centerY = rect.height / 2;
+//         const rotateX = (y - centerY) / 10;
+//         const rotateY = (centerX - x) / 10;
         
-        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-10px)`;
-    });
+//         card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-10px)`;
+//     });
     
-    card.addEventListener('mouseleave', () => {
-        card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
-    });
-});
+//     card.addEventListener('mouseleave', () => {
+//         card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
+//     });
+// });
 
 // Header scroll effect
 const siteHeader = document.querySelector('header');

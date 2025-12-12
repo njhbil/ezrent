@@ -491,7 +491,7 @@ include 'header.php';
 <main class="booking-page">
     <div class="booking-container">
         
-        <a href="vehicles.php" class="btn-back">← Kembali ke Daftar Kendaraan</a>
+        <a href="vehicles.php" class="btn-back">← Kembali</a>
         
         <div class="booking-header">
             <h1>Formulir <strong>Pemesanan</strong></h1>
@@ -563,8 +563,13 @@ include 'header.php';
                                 Kode diskon akan divalidasi saat pemesanan dibuat
                             </small>
                         </div>
+                        <button type="button" id="applyDiscountBtn" class="btn-submit" style="margin-top: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);" onclick="validateDiscount()">
+                            <i class="fas fa-tag"></i> Terapkan Kode Diskon
+                        </button>
+                        <div id="discountMessage" style="margin-top: 0.5rem; font-size: 0.85rem;"></div>
                     </div>
                     
+                
                     <!-- KTP Section -->
                     <div style="padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 1.5rem;">
                         <h4 style="color: #fff; font-size: 1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
@@ -605,9 +610,7 @@ include 'header.php';
                         </div>
                     </div>
                     
-                    <button type="submit" class="btn-submit" style="margin-top: 1.5rem;">
-                        Konfirmasi Pemesanan & Verifikasi
-                    </button>
+                    
                 </form>
             </div>
             
@@ -662,10 +665,11 @@ include 'header.php';
                             <span>Total Bayar</span>
                             <span class="amount" id="totalPrice">Rp 0</span>
                         </div>
-                        <button type="button" id="applyDiscountBtn" class="btn-submit" style="margin-top: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);" onclick="validateDiscount()">
-                            <i class="fas fa-tag"></i> Terapkan Kode Diskon
+                        
+                        <button type="submit" class="btn-submit" style="margin-top: 1.5rem;">
+                        Konfirmasi Pemesanan
                         </button>
-                        <div id="discountMessage" style="margin-top: 0.5rem; font-size: 0.85rem;"></div>
+                        
                     </div>
                 </div>
             </div>
