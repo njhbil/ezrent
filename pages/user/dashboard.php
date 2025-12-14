@@ -536,15 +536,16 @@ include 'header.php';
     .stat-value {
         font-size: 3.5rem;
         font-weight: 700;
-        color: #fff;
+        color: #fff !important;
         line-height: 1;
         margin-bottom: 0.75rem;
         text-shadow: 0 4px 20px rgba(255,255,255,0.1);
     }
     
+    /* Accent stats (use red) */
     .stat-value.accent { 
-        color: #d50000; 
-        text-shadow: 0 4px 20px rgba(213,0,0,0.3);
+        color: #d50000 !important; 
+        text-shadow: 0 4px 20px rgba(213,0,0,0.3) !important;
     }
     
     .stat-label {
@@ -926,7 +927,7 @@ include 'header.php';
 <!-- Stats Section -->
 <section class="stats-section">
     <div class="section-header">
-        <h2 style="color: #000;">EzRent dalam Angka</h2>
+        <h2 style="color: #ffffffff;">EzRent dalam Angka</h2>
         <p>Dipercaya ribuan pelanggan di seluruh Indonesia</p>
     </div>
     

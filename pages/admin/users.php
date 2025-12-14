@@ -8,6 +8,39 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
 require_once '../../php/config/database.php';
 
+// Handle create user form submission from admin
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'create_user') {
+    $name = trim($_POST['name'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $phone = trim($_POST['phone'] ?? '');
+    $address = trim($_POST['address'] ?? '');
+    $role = in_array($_POST['role'] ?? 'user', ['user','admin']) ? $_POST['role'] : 'user';
+    $password = $_POST['password'] ?? '';
+
+    // basic validation
+    if ($name === '' || $email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || $password === '') {
+        $_SESSION['flash_error'] = 'Nama, email valid, dan password wajib diisi.';
+        header('Location: users.php'); exit;
+    }
+
+    // check duplicate email
+    $chk = $pdo->prepare("SELECT COUNT(*) FROM users WHERE email = ?");
+    $chk->execute([$email]);
+    if ($chk->fetchColumn() > 0) {
+        $_SESSION['flash_error'] = 'Email sudah terdaftar.';
+        header('Location: users.php'); exit;
+    }
+
+    // create user
+    $hash = password_hash($password, PASSWORD_DEFAULT);
+    $is_verified = isset($_POST['is_verified']) && $_POST['is_verified'] == '1' ? 1 : 0;
+    $stmt = $pdo->prepare("INSERT INTO users (nama_lengkap, email, password, nomor_telepon, alamat, role, is_verified, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
+    $stmt->execute([$name, $email, $hash, $phone, $address, $role, $is_verified]);
+
+    $_SESSION['flash_success'] = 'User baru berhasil dibuat.';
+    header('Location: users.php'); exit;
+}
+
 if (isset($_GET['export']) && $_GET['export'] == 'excel') {
     header('Content-Type: text/csv');
     header('Content-Disposition: attachment; filename="data_pengguna_ezrent.csv"');
@@ -117,10 +150,69 @@ include 'header.php';
         <h2 class="fw-bold text-dark mb-0">Manajemen Pengguna</h2>
         <p class="text-muted mb-0 d-none d-md-block">Kelola data pelanggan dan hak akses.</p>
     </div>
-    <div>
-        <button class="btn btn-primary btn-sm" onclick="alert('User mendaftar melalui halaman Register publik.')">
-            <i class="fas fa-plus me-1"></i> <span class="d-none d-sm-inline">Tambah User</span><span class="d-sm-none">Tambah</span>
-        </button>
+        <div>
+                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                        <i class="fas fa-plus me-1"></i> <span class="d-none d-sm-inline">Tambah User</span><span class="d-sm-none">Tambah</span>
+                </button>
+        </div>
+</div>
+
+<?php if(!empty($_SESSION['flash_error'])): ?>
+        <div class="alert alert-danger"><?php echo htmlspecialchars($_SESSION['flash_error']); unset($_SESSION['flash_error']); ?></div>
+<?php endif; ?>
+<?php if(!empty($_SESSION['flash_success'])): ?>
+        <div class="alert alert-success"><?php echo htmlspecialchars($_SESSION['flash_success']); unset($_SESSION['flash_success']); ?></div>
+<?php endif; ?>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addUserModalLabel"><i class="fas fa-user-plus me-2"></i>Tambah Pengguna</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="users.php">
+            <div class="modal-body">
+                    <input type="hidden" name="action" value="create_user">
+                    <div class="mb-3">
+                        <label class="form-label">Nama Lengkap</label>
+                        <input name="name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input name="email" type="email" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input name="password" type="password" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">No. Telepon</label>
+                        <input name="phone" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Alamat</label>
+                        <textarea name="address" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Role</label>
+                        <select name="role" class="form-select">
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <div class="form-check mb-0">
+                        <input class="form-check-input" type="checkbox" value="1" id="is_verified" name="is_verified">
+                        <label class="form-check-label" for="is_verified">Tandai sebagai terverifikasi</label>
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-primary">Buat Pengguna</button>
+            </div>
+            </form>
+        </div>
     </div>
 </div>
 

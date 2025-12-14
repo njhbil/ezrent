@@ -4,7 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
-    header('Location: ' . ($_SESSION['role'] === 'admin' ? 'admin/dashboard.php' : 'user/dashboard.php'));
+    header('Location: ' . ($_SESSION['role'] === 'admin' ? 'admin/dashboard. php' : 'user/dashboard.php'));
     exit;
 }
 
@@ -101,7 +101,7 @@ $page_title = "Login - EzRent";
             position: fixed;
             top: 0;
             right: 0;
-            width: 50%;
+            width:  50%;
             padding: 1.5rem 2rem;
             display: flex;
             justify-content: flex-end;
@@ -137,7 +137,6 @@ $page_title = "Login - EzRent";
         /* Left Side - Visual (Fixed) */
         .login-visual {
             width: 50%;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
             position: fixed;
             top: 0;
             left: 0;
@@ -146,7 +145,10 @@ $page_title = "Login - EzRent";
             align-items: center;
             justify-content: center;
             overflow: hidden;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0d0d0d 100%);
         }
+
+        /* Animated Background */
         .login-visual::before {
             content: '';
             position: absolute;
@@ -154,11 +156,89 @@ $page_title = "Login - EzRent";
             left: 0;
             right: 0;
             bottom: 0;
-            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='30' cy='30' r='1' fill='rgba(255,255,255,0.03)'/%3E%3C/svg%3E");
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(213,0,0,0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255,82,82,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(255,255,255,0.03) 0%, transparent 50%);
+            animation: gradientShift 15s ease infinite;
+            z-index: 1;
         }
+
+        @keyframes gradientShift {
+            0% {
+                background-image: 
+                    radial-gradient(circle at 20% 50%, rgba(213,0,0,0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 80%, rgba(255,82,82,0.1) 0%, transparent 50%),
+                    radial-gradient(circle at 40% 20%, rgba(255,255,255,0.03) 0%, transparent 50%);
+            }
+            50% {
+                background-image: 
+                    radial-gradient(circle at 40% 30%, rgba(213,0,0,0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 60% 70%, rgba(255,82,82,0.1) 0%, transparent 50%),
+                    radial-gradient(circle at 70% 40%, rgba(255,255,255,0.03) 0%, transparent 50%);
+            }
+            100% {
+                background-image: 
+                    radial-gradient(circle at 20% 50%, rgba(213,0,0,0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 80%, rgba(255,82,82,0.1) 0%, transparent 50%),
+                    radial-gradient(circle at 40% 20%, rgba(255,255,255,0.03) 0%, transparent 50%);
+            }
+        }
+
+        /* Grid Pattern */
+        .login-visual::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(0deg, transparent 24%, rgba(255,82,82,0.05) 25%, rgba(255,82,82,0.05) 26%, transparent 27%, transparent 74%, rgba(255,82,82,0.05) 75%, rgba(255,82,82,0.05) 76%, transparent 77%, transparent),
+                linear-gradient(90deg, transparent 24%, rgba(255,82,82,0.05) 25%, rgba(255,82,82,0.05) 26%, transparent 27%, transparent 74%, rgba(255,82,82,0.05) 75%, rgba(255,82,82,0.05) 76%, transparent 77%, transparent);
+            background-size: 100px 100px;
+            z-index: 2;
+            opacity: 0.3;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% {
+                background-position: 0 0;
+            }
+            100% {
+                background-position: 100px 100px;
+            }
+        }
+
+        /* Floating Particles */
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) translateX(0px);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-300px) translateX(100px);
+                opacity: 0;
+            }
+        }
+
         .visual-content {
             position: relative;
-            z-index: 2;
+            z-index: 10;
             text-align: center;
             padding: 3rem;
             max-width: 500px;
@@ -167,10 +247,24 @@ $page_title = "Login - EzRent";
         /* Visual Logo */
         .visual-logo {
             margin-bottom: 2rem;
+            animation: slideInDown 1s ease 0.3s forwards;
+            opacity: 0;
         }
+
+        @keyframes slideInDown {
+            from {
+                opacity:  0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .visual-logo-text {
             font-size: 4rem;
-            font-weight: 700;
+            font-weight:  700;
             letter-spacing: -0.03em;
             line-height: 1;
         }
@@ -189,39 +283,74 @@ $page_title = "Login - EzRent";
             letter-spacing: 0.2em;
             text-transform: uppercase;
             margin-top: 1rem;
+            animation: fadeIn 1s ease 0.6s forwards;
+            opacity: 0;
         }
-        
-        @media (max-width: 768px) {
-            .login-header { display: none !important; }
-            .login-visual .visual-logo, .login-visual .visual-tagline { display: none !important; }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
             }
-            
-        
-        
-        /* Decorative elements */
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Decorative circles with animation */
         .decor-circle {
             position: absolute;
             border-radius: 50%;
-            border: 1px solid rgba(213,0,0,0.1);
+            border: 2px solid rgba(213,0,0,0.2);
             pointer-events: none;
+            opacity: 0.5;
         }
         .decor-circle.c1 {
             width: 400px;
             height: 400px;
             top: -200px;
             left: -200px;
-            animation: rotate 30s linear infinite;
+            animation: rotateSlow 30s linear infinite, pulse-circle 4s ease-in-out infinite;
         }
         .decor-circle.c2 {
             width: 300px;
             height: 300px;
             bottom: -150px;
             right: -150px;
-            animation: rotate 25s linear infinite reverse;
+            animation: rotateSlow 25s linear infinite reverse, pulse-circle 5s ease-in-out infinite 1s;
         }
-        @keyframes rotate {
+        .decor-circle.c3 {
+            width: 250px;
+            height: 250px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-color: rgba(255,255,255,0.08);
+            animation: rotateSlow 40s linear infinite, scale-circle 6s ease-in-out infinite;
+        }
+        
+        @keyframes rotateSlow {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse-circle {
+            0%, 100% {
+                border-color: rgba(213,0,0,0.2);
+                transform: scale(1);
+            }
+            50% {
+                border-color: rgba(213,0,0,0.4);
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes scale-circle {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(0.95);
+            }
         }
         
         /* Right Side - Form */
@@ -251,7 +380,7 @@ $page_title = "Login - EzRent";
             margin-bottom: 2.5rem;
         }
         .form-header h1 {
-            font-size: 1.75rem;
+            font-size:  1.75rem;
             font-weight: 600;
             color: #000;
             margin-bottom: 0.5rem;
@@ -311,7 +440,7 @@ $page_title = "Login - EzRent";
             height: 20px;
             color: #dc2626;
             flex-shrink: 0;
-            margin-top: 2px;
+            margin-top:  2px;
         }
         .error-box span {
             color: #991b1b;
@@ -329,7 +458,7 @@ $page_title = "Login - EzRent";
             font-size: 0.8rem;
             font-weight: 500;
             color: #374151;
-            margin-bottom: 0.5rem;
+            margin-bottom:  0.5rem;
         }
         .form-label .required {
             color: #d50000;
@@ -378,7 +507,7 @@ $page_title = "Login - EzRent";
             font-size: 0.8rem;
             color: #6b7280;
             text-decoration: none;
-            transition: color 0.3s;
+            transition:  color 0.3s;
         }
         .forgot-link:hover {
             color: #000;
@@ -400,7 +529,7 @@ $page_title = "Login - EzRent";
         .checkbox-wrapper input {
             position: absolute;
             opacity: 0;
-            cursor: pointer;
+            cursor:  pointer;
             width: 100%;
             height: 100%;
             z-index: 2;
@@ -484,7 +613,7 @@ $page_title = "Login - EzRent";
             animation: spin 0.8s linear infinite;
             position: absolute;
         }
-        .btn-login.loading .spinner {
+        .btn-login .loading .spinner {
             display: block;
         }
         @keyframes spin {
@@ -568,7 +697,7 @@ $page_title = "Login - EzRent";
                 max-width: 100%;
             }
             .form-header h1 {
-                font-size: 1.5rem;
+                font-size:  1.5rem;
             }
             .mobile-logo-header {
                 padding: 2rem 1.25rem;
@@ -580,7 +709,6 @@ $page_title = "Login - EzRent";
     </style>
 </head>
 <body>
-
 
 <header class="login-header" id="header">
     <a href="index.php" class="back-link">
@@ -603,9 +731,10 @@ $page_title = "Login - EzRent";
 
 <div class="login-wrapper">
     <!-- Left Side - Visual (Fixed) -->
-    <div class="login-visual">
+    <div class="login-visual" id="loginVisual">
         <div class="decor-circle c1"></div>
         <div class="decor-circle c2"></div>
+        <div class="decor-circle c3"></div>
         
         <div class="visual-content">
             <div class="visual-logo">
@@ -701,9 +830,37 @@ $page_title = "Login - EzRent";
 </div>
 
 <script>
+// Create floating particles
+function createParticles() {
+    const visual = document.getElementById('loginVisual');
+    if (!visual) return;
+    
+    for (let i = 0; i < 30; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        
+        const size = Math.random() * 3 + 1;
+        const left = Math.random() * 100;
+        const delay = Math.random() * 5;
+        const duration = Math.random() * 15 + 20;
+        
+        particle.style.width = size + 'px';
+        particle.style.height = size + 'px';
+        particle.style.left = left + '%';
+        particle.style.bottom = '-10px';
+        particle.style.background = `rgba(${Math.random() > 0.5 ? '213,0,0' : '255,255,255'}, ${Math.random() * 0.3 + 0.2})`;
+        particle.style.animationDelay = delay + 's';
+        particle. style.animationDuration = duration + 's';
+        
+        visual.appendChild(particle);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    createParticles();
+    
     const form = document.getElementById('loginForm');
-    const submitBtn = document.getElementById('submitBtn');
+    const submitBtn = document. getElementById('submitBtn');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
 
@@ -729,7 +886,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Disable button dan tampilkan loading
-        submitBtn.disabled = true;
+        submitBtn. disabled = true;
         submitBtn.classList.add('loading');
     });
 

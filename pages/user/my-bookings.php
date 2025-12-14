@@ -9,7 +9,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     header("Location: ../login.php");
     exit();
 }
-
 // Koneksi ke database
 require_once '../../php/config/database.php';
 
@@ -128,11 +127,13 @@ function getPaymentStatus($status) {
 
     /* Hero Section */
     .bookings-hero {
-        background: linear-gradient(135deg, #000 0%, #1a1a1a 100%);
+        /* use a full-cover hero image (match other pages) with subtle dark overlay */
+        background: linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)), url('../assets/images/vehicles/ez-1.jpg') center/cover no-repeat;
         padding: 8rem 20px 5rem;
         width: 100%;
         position: relative;
         overflow: hidden;
+        color: #fff;
     }
     
     /* Particle Canvas */
@@ -147,13 +148,14 @@ function getPaymentStatus($status) {
     }
     
     .bookings-hero::before {
+        /* keep pattern off for a cleaner hero — subtle overlay handled by the gradient above */
         content: '';
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        background-image: none;
         pointer-events: none;
     }
     

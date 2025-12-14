@@ -39,7 +39,10 @@
         
         /* Sidebar - iOS/Glassmorphism Style */
         .sidebar {
-            min-height: 100vh;
+            /* ensure sidebar fills viewport and allows inner scrolling */
+            display: flex;
+            flex-direction: column;
+            max-height: 100vh;
             background: linear-gradient(180deg, rgba(15,15,15,0.97) 0%, rgba(20,20,20,0.98) 100%);
             position: fixed;
             left: 0;
@@ -50,6 +53,7 @@
             border-right: 1px solid rgba(255,255,255,0.08);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
+            overflow: hidden; /* children will handle scrolling */
         }
         
         /* Background decoration */
@@ -202,6 +206,13 @@
             padding: 0.5rem 0;
             position: relative;
             z-index: 1;
+            /* make navigation area scrollable while keeping header/profile visible */
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            flex: 1 1 auto;
+            padding-bottom: 1.25rem;
+            /* ensure visible scrollbar and limited height so header/profile stay sticky */
+            max-height: calc(100vh - 220px);
         }
         
         .nav-section-title {
@@ -1097,11 +1108,7 @@ try {
                 <i class="fas fa-chart-line"></i>
                 <span>Laporan</span>
             </a>
-            <a class="nav-link <?php echo (basename($_SERVER['PHP_SELF']) == 'test-payment.php') ? 'active' : ''; ?>" href="test-payment.php">
-                <i class="fas fa-flask"></i>
-                <span>Test Pembayaran</span>
-                <span class="badge-count" style="background: #ffc107; color: #000;">SANDBOX</span>
-            </a>
+            <!-- Test payment removed -->
             <a class="nav-link <?php echo (basename($_SERVER['PHP_SELF']) == 'settings.php') ? 'active' : ''; ?>" href="settings.php">
                 <i class="fas fa-cog"></i>
                 <span>Pengaturan</span>
@@ -1184,3 +1191,4 @@ function toggleSidebar() {
     document.getElementById('sidebarOverlay').classList.toggle('show');
 }
 </script>
+<script src="../../assets/js/bootstrap.bundle.min.js"></script>
