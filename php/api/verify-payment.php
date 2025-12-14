@@ -1,8 +1,5 @@
 <?php
-/**
- * Payment Verification API
- * Verifies if payment has been received and updates booking status
- */
+
 
 session_start();
 header('Content-Type: application/json');
@@ -52,6 +49,10 @@ try {
             WHERE id = ? AND status = 'pending'
         ");
         $update_stmt->execute([$booking_id]);
+            // Also update booking.payment_status to paid
+            try {
+                $pdo->prepare("UPDATE bookings SET payment_status = 'paid', updated_at = NOW() WHERE id = ?")->execute([$booking_id]);
+            } catch (Exception $e) {}
         
         echo json_encode([
             'status' => 'success',

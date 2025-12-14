@@ -1276,7 +1276,7 @@ $page_title = "Tentang Kami - EzRent";
                     <circle cx="17" cy="17" r="2"/>
                 </svg>
             </div>
-            <div class="stat-value">500+</div>
+            <div class="stat-value"><span class="stat-num" data-target="500">0</span><span class="stat-suffix">+</span></div>
             <div class="stat-label">Unit Kendaraan</div>
             <div class="stat-desc">Motor & Mobil Tersedia</div>
         </div>
@@ -1289,7 +1289,7 @@ $page_title = "Tentang Kami - EzRent";
                     <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                 </svg>
             </div>
-            <div class="stat-value">10K+</div>
+            <div class="stat-value"><span class="stat-num" data-target="10000">0</span><span class="stat-suffix">K+</span></div>
             <div class="stat-label">Pelanggan Puas</div>
             <div class="stat-desc">Kepercayaan Terjaga</div>
         </div>
@@ -1300,7 +1300,7 @@ $page_title = "Tentang Kami - EzRent";
                     <polyline points="12 6 12 12 16 14"/>
                 </svg>
             </div>
-            <div class="stat-value">4+</div>
+            <div class="stat-value"><span class="stat-num" data-target="4">0</span><span class="stat-suffix">+</span></div>
             <div class="stat-label">Tahun Pengalaman</div>
             <div class="stat-desc">Melayani Sejak 2020</div>
         </div>
@@ -1310,7 +1310,7 @@ $page_title = "Tentang Kami - EzRent";
                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
                 </svg>
             </div>
-            <div class="stat-value">24/7</div>
+            <div class="stat-value"><span class="stat-num" data-target="24">0</span><span class="stat-suffix">/7</span></div>
             <div class="stat-label">Customer Support</div>
             <div class="stat-desc">Siap Membantu Anda</div>
         </div>
@@ -1563,6 +1563,39 @@ if (siteHeader) {
             siteHeader.classList.remove('scrolled');
         }
     });
+}
+
+// Animated counters for stats
+function animateCount(el, target, duration = 1400) {
+    const start = 0;
+    const range = target - start;
+    let current = start;
+    const increment = Math.ceil(range / (duration / 16));
+    const timer = setInterval(() => {
+        current += increment;
+        if (current >= target) {
+            el.textContent = target.toLocaleString();
+            clearInterval(timer);
+        } else {
+            el.textContent = current.toLocaleString();
+        }
+    }, 16);
+}
+
+// Observe stat numbers
+const statNums = document.querySelectorAll('.stat-num');
+if (statNums.length) {
+    const statObserver = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const numEl = entry.target;
+                const target = parseInt(numEl.dataset.target, 10) || 0;
+                animateCount(numEl, target, 1400);
+                obs.unobserve(numEl);
+            }
+        });
+    }, { threshold: 0.5 });
+    statNums.forEach(n => statObserver.observe(n));
 }
 </script>
 

@@ -67,14 +67,15 @@ try {
             'payment_id' => $existing_payment['id']
         ]);
         exit();
-    }
-    
-    // Record or update payment
-    if ($existing_payment) {
-        $update_stmt = $pdo->prepare("
-            UPDATE payments 
-            SET status = 'completed',
+        $booking_update = $pdo->prepare("
+            UPDATE bookings 
+            SET status = 'confirmed', 
                 payment_method = ?,
+                payment_status = 'completed', 
+                updated_at = NOW()
+            WHERE id = ?
+        ");
+        $booking_update->execute([$payment_method, $booking_id]);
                 payment_code = ?,
                 reference_number = ?,
                 amount = ?,
@@ -117,6 +118,17 @@ try {
         WHERE id = ? AND status = 'pending'
     ");
     $booking_update->execute([$payment_method, $booking_id]);
+    // Update vehicle status to 'disewa' when booking confirmed
+    try {
+        $vidStmt = $pdo->prepare("SELECT vehicle_id FROM bookings WHERE id = ?");
+        $vidStmt->execute([$booking_id]);
+        $vehicle_id = $vidStmt->fetchColumn();
+        if ($vehicle_id) {
+            $pdo->prepare("UPDATE vehicles SET status = ? WHERE id = ?")->execute(['disewa', $vehicle_id]);
+        }
+    } catch (Exception $e) {
+        // log or ignore
+    }
     
     echo json_encode([
         'status' => 'success',

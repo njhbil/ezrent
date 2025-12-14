@@ -8,6 +8,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
 require_once '../../php/config/database.php';
 
+// --- LOGIC UPDATE STATUS ---
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_status'])) {
     $id = $_POST['booking_id'];
     $new_status = $_POST['status'];
@@ -15,12 +16,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_status'])) {
     try {
         $pdo->beginTransaction();
         
+        // Update status booking
         $stmt = $pdo->prepare("UPDATE bookings SET status = ? WHERE id = ?");
         $stmt->execute([$new_status, $id]);
         
+        // Cek kendaraan terkait
         $vid = $pdo->query("SELECT vehicle_id FROM bookings WHERE id = $id")->fetchColumn();
         
         if ($vid) {
+            // Logika status kendaraan berdasarkan status booking
             $v_status = ($new_status == 'confirmed' || $new_status == 'ready' || $new_status == 'active') ? 'disewa' : 'tersedia';
             $pdo->prepare("UPDATE vehicles SET status = ? WHERE id = ?")->execute([$v_status, $vid]);
         }
@@ -34,6 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_status'])) {
     }
 }
 
+// --- FILTER & SEARCH ---
 $filter_status = $_GET['status'] ?? '';
 $search = $_GET['search'] ?? '';
 
@@ -59,10 +64,12 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// --- STATS ---
 $stats = [
     'pending' => $pdo->query("SELECT COUNT(*) FROM bookings WHERE status = 'pending'")->fetchColumn(),
     'active' => $pdo->query("SELECT COUNT(*) FROM bookings WHERE status = 'active'")->fetchColumn(),
-    'income' => $pdo->query("SELECT SUM(total_price) FROM bookings WHERE status = 'completed'")->fetchColumn() ?: 0
+    // Query pendapatan diperbaiki agar mengambil total yang valid
+    'income' => $pdo->query("SELECT SUM(total_price) FROM bookings WHERE status IN ('completed', 'active')")->fetchColumn() ?: 0
 ];
 
 $page_title = "Manajemen Pesanan";
@@ -70,16 +77,19 @@ include 'header.php';
 ?>
 
 <style>
+    /* Card Stats */
     .card-stat { border:none; border-radius:12px; background:white; box-shadow:0 2px 10px rgba(0,0,0,0.03); transition:.3s; }
     .card-stat:hover { transform:translateY(-5px); }
     
+    /* Table Custom */
     .table-custom { border-collapse: separate; border-spacing: 0 8px; }
     .table-custom thead th { border:none; font-weight:600; color:#6c757d; font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; padding: 15px; background: #f8f9fa; }
-    .table-custom tbody tr { background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: .2s; }
+    .table-custom tbody tr { background: white; box-shadow:  0 2px 5px rgba(0,0,0,0.02); transition: .2s; }
     .table-custom td { vertical-align: middle; padding: 15px; border: none; }
     .table-custom td:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
     .table-custom td:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
 
+    /* Badges */
     .badge-status { padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.75rem; display: inline-block; min-width: 90px; text-align: center; }
     .st-pending { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; }
     .st-confirmed { background: #eff6ff; color: #1d4ed8; border: 1px solid #dbeafe; }
@@ -87,9 +97,9 @@ include 'header.php';
     .st-active { background: #f0fdf4; color: #15803d; border: 1px solid #dcfce7; }
     .st-completed { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
     .st-cancelled { background: #fef2f2; color: #b91c1c; border: 1px solid #fee2e2; }
-
     .booking-code { font-family: monospace; font-weight: 700; color: #4f46e5; background: #eef2ff; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; }
     
+    /* Modal Status Radio Options */
     .status-options { display: flex; flex-direction: column; gap: 8px; }
     .status-option { position: relative; }
     .status-option input { position: absolute; opacity: 0; }
@@ -100,9 +110,13 @@ include 'header.php';
     }
     .status-option label:hover { border-color: #d1d5db; background: #f9fafb; }
     .status-option input:checked + label { border-color: #d50000; background: #fef2f2; }
-    .status-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
-    .status-label { font-weight: 600; color: #1f2937; font-size: 0.9rem; }
+    .status-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content:  center; font-size: 1rem; flex-shrink: 0; }
+    .status-label { font-weight: 600; color: #1f2937; font-size:  0.9rem; }
     .status-desc { font-size: 0.75rem; color: #6b7280; margin-left: auto; }
+    
+    /* Fix Z-Index Issues Global */
+    .modal-backdrop { z-index: 1040 !important; }
+    .modal { z-index: 1050 !important; }
     
     @media (max-width: 767px) {
         .table-custom thead { display: none; }
@@ -110,8 +124,6 @@ include 'header.php';
         .table-custom td { display: block; padding: 0.5rem 0; text-align: left; }
         .table-custom td::before { content: attr(data-label); font-weight: 600; color: #6c757d; font-size: 0.75rem; display: block; margin-bottom: 0.25rem; }
         .table-custom td:last-child { text-align: left; }
-        .card-stat { margin-bottom: 0.5rem; }
-        .card-stat p, .card-stat small { font-size: 0.75rem; }
     }
 </style>
 
@@ -142,7 +154,10 @@ include 'header.php';
     <div class="col-12 col-md-4">
         <div class="card card-stat p-3 border-start border-4 border-primary">
             <div class="d-flex justify-content-between align-items-center">
-                <div><small class="text-muted">Pendapatan</small><h2 class="mb-0 fw-bold text-primary">Rp <?php echo number_format($stats['income']/1000, 0); ?>k</h2></div>
+                <div>
+                    <small class="text-muted">Total Pendapatan</small>
+                    <h2 class="mb-0 fw-bold text-primary">Rp <?php echo number_format($stats['income'], 0, ',', '.'); ?></h2>
+                </div>
                 <div class="bg-primary bg-opacity-10 p-2 p-md-3 rounded-circle text-primary d-none d-sm-flex"><i class="fas fa-wallet"></i></div>
             </div>
         </div>
@@ -158,8 +173,8 @@ include 'header.php';
                     <option value="pending" <?php echo $filter_status=='pending'?'selected':''; ?>>Menunggu</option>
                     <option value="confirmed" <?php echo $filter_status=='confirmed'?'selected':''; ?>>Dikonfirmasi</option>
                     <option value="ready" <?php echo $filter_status=='ready'?'selected':''; ?>>Siap Diambil</option>
-                    <option value="active" <?php echo $filter_status=='active'?'selected':''; ?>>Dipinjam</option>
-                    <option value="completed" <?php echo $filter_status=='completed'?'selected':''; ?>>Selesai</option>
+                    <option value="active" <?php echo $filter_status=='active'? 'selected':''; ?>>Dipinjam</option>
+                    <option value="completed" <?php echo $filter_status=='completed'? 'selected':''; ?>>Selesai</option>
                     <option value="cancelled" <?php echo $filter_status=='cancelled'?'selected':''; ?>>Dibatalkan</option>
                 </select>
             </div>
@@ -194,59 +209,60 @@ include 'header.php';
             <?php else: ?>
                 <?php foreach($bookings as $b): ?>
                 <tr>
-                    <td>
+                    <td data-label="Booking Info">
                         <span class="booking-code"><?php echo $b['kode_booking']; ?></span><br>
                         <small class="text-muted text-nowrap"><i class="far fa-clock me-1"></i> <?php echo date('d/m/y H:i', strtotime($b['created_at'])); ?></small>
                     </td>
-                    <td>
+                    <td data-label="Pelanggan">
                         <div class="fw-bold text-dark"><?php echo htmlspecialchars($b['nama_lengkap']); ?></div>
                         <div class="small text-muted"><i class="fab fa-whatsapp me-1 text-success"></i> <?php echo htmlspecialchars($b['nomor_telepon']); ?></div>
                     </td>
-                    <td>
+                    <td data-label="Kendaraan">
                         <div class="fw-bold"><?php echo htmlspecialchars($b['kendaraan']); ?></div>
                         <span class="badge bg-light text-dark border"><?php echo htmlspecialchars($b['plat_nomor']); ?></span>
                     </td>
-                    <td>
+                    <td data-label="Total">
                         <div class="fw-bold text-primary">Rp <?php echo number_format($b['total_price'], 0, ',', '.'); ?></div>
-                        <small class="text-muted"><?php echo $b['total_days']; ?> Hari (<?php echo date('d M', strtotime($b['start_date'])); ?> - <?php echo date('d M', strtotime($b['end_date'])); ?>)</small>
+                        <small class="text-muted"><?php echo $b['total_days']; ?> Hari (<?php echo date('d M', strtotime($b['start_date'])); ?>)</small>
                     </td>
-                    <td>
+                    <td data-label="Status">
                         <?php 
-                            $st = $b['status'];
-                            $labels = [
-                                'pending' => 'Menunggu',
-                                'confirmed' => 'Dikonfirmasi',
-                                'ready' => 'Siap Diambil',
-                                'active' => 'Dipinjam',
-                                'completed' => 'Selesai',
-                                'cancelled' => 'Dibatalkan'
-                            ];
-                            $label = $labels[$st] ?? ucfirst($st);
+                        // Use local badge classes to avoid global .badge styles overriding text color
+                        $badges = [
+                            'pending' => 'badge-status st-pending',
+                            'confirmed' => 'badge-status st-confirmed',
+                            'ready' => 'badge-status st-ready',
+                            'active' => 'badge-status st-active',
+                            'completed' => 'badge-status st-completed',
+                            'cancelled' => 'badge-status st-cancelled'
+                        ];
+                        $labels = [
+                            'pending' => 'Menunggu',
+                            'confirmed' => 'Dikonfirmasi',
+                            'ready' => 'Siap Diambil',
+                            'active' => 'Sedang Dipinjam',
+                            'completed' => 'Selesai',
+                            'cancelled' => 'Dibatalkan'
+                        ];
+                        // Handle missing/empty status
+                        if (empty($b['status'])) {
+                            $cls = 'badge-status bg-light text-dark';
+                            $text = 'Belum ada status';
+                        } else {
+                            $cls = $badges[$b['status']] ?? 'badge-status bg-light text-dark';
+                            $text = $labels[$b['status']] ?? ucfirst($b['status']);
+                        }
                         ?>
-                        <span class="badge-status st-<?php echo $st; ?>"><?php echo $label; ?></span>
+                        <span class="<?php echo $cls; ?> px-3 py-2 rounded-pill"><?php echo $text; ?></span>
                     </td>
-                    <td class="text-end">
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-light border dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-sliders-h"></i>
+                    <td class="text-end" data-label="Aksi">
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button class="btn btn-sm btn-primary" onclick="openStatusModal('<?php echo $b['id']; ?>', '<?php echo $b['kode_booking']; ?>', '<?php echo $b['status']; ?>')">
+                                <i class="fas fa-edit"></i>
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-                                <li><h6 class="dropdown-header">Kelola Pesanan</h6></li>
-                                
-                                <li>
-                                    <button class="dropdown-item" 
-                                            onclick="openStatusModal('<?php echo $b['id']; ?>', '<?php echo $b['kode_booking']; ?>', '<?php echo $b['status']; ?>')">
-                                        <i class="fas fa-edit me-2 text-primary"></i>Ubah Status Manual
-                                    </button>
-                                </li>
-                                
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#detailModal<?php echo $b['id']; ?>">
-                                        <i class="fas fa-eye me-2 text-secondary"></i>Lihat Detail
-                                    </button>
-                                </li>
-                            </ul>
+                            <button class="btn btn-sm btn-light border" type="button" data-bs-toggle="modal" data-bs-target="#detailModal<?php echo $b['id']; ?>">
+                                <i class="fas fa-eye text-secondary"></i>
+                            </button>
                         </div>
                     </td>
                 </tr>
@@ -260,86 +276,41 @@ include 'header.php';
                             </div>
                             <div class="modal-body">
                                 <div class="row">
-                                    <!-- Info Pelanggan -->
                                     <div class="col-md-6 mb-4">
-                                        <h6 class="text-muted text-uppercase small fw-bold mb-3">
-                                            <i class="fas fa-user me-2"></i>Informasi Pelanggan
-                                        </h6>
+                                        <h6 class="text-muted text-uppercase small fw-bold mb-3"><i class="fas fa-user me-2"></i>Informasi Pelanggan</h6>
                                         <div class="d-flex align-items-center mb-3">
                                             <?php 
                                             $profileImg = !empty($b['foto_profil']) ? '../../assets/images/profiles/' . $b['foto_profil'] : null;
-                                            if ($profileImg && file_exists('../../assets/images/profiles/' . $b['foto_profil'])): 
-                                            ?>
-                                            <img src="<?php echo $profileImg; ?>" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                            if ($profileImg && file_exists('../../assets/images/profiles/' . $b['foto_profil'])): ?>
+                                                <img src="<?php echo $profileImg; ?>" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
                                             <?php else: ?>
-                                            <div class="bg-primary text-white rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; font-weight: 600;">
-                                                <?php echo strtoupper(substr($b['nama_lengkap'], 0, 1)); ?>
-                                            </div>
+                                                <div class="bg-primary text-white rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; font-weight: 600;">
+                                                    <?php echo strtoupper(substr($b['nama_lengkap'], 0, 1)); ?>
+                                                </div>
                                             <?php endif; ?>
                                             <div>
                                                 <div class="fw-bold"><?php echo htmlspecialchars($b['nama_lengkap']); ?></div>
                                                 <div class="small text-muted"><?php echo htmlspecialchars($b['email']); ?></div>
                                             </div>
                                         </div>
-                                        <div class="small">
-                                            <p class="mb-1"><i class="fab fa-whatsapp text-success me-2"></i><?php echo htmlspecialchars($b['nomor_telepon']); ?></p>
-                                        </div>
                                     </div>
-                                    
-                                    <!-- Foto KTP -->
                                     <div class="col-md-6 mb-4">
-                                        <h6 class="text-muted text-uppercase small fw-bold mb-3">
-                                            <i class="fas fa-id-card me-2"></i>Identitas (KTP)
-                                        </h6>
-                                        <?php if (!empty($b['ktp_image'])): 
-                                            $ktpPath = '../../php/uploads/ktp/' . $b['ktp_image'];
+                                        <h6 class="text-muted text-uppercase small fw-bold mb-3"><i class="fas fa-id-card me-2"></i>Identitas</h6>
+                                        <?php 
+                                            $ktpPath = '../../assets/images/ktp/' . ($b['foto_ktp'] ?? 'default.jpg');
+                                            if(file_exists($ktpPath)): 
                                         ?>
-                                        <div class="ktp-preview p-2 bg-light rounded border mb-2">
-                                            <img src="<?php echo $ktpPath; ?>" 
-                                                 alt="Foto KTP" 
-                                                 class="img-fluid rounded" 
-                                                 style="max-height: 150px; cursor: pointer;"
-                                                 onclick="openKTPModal('<?php echo $ktpPath; ?>')">
-                                        </div>
-                                        <small class="text-muted">No. KTP: <strong><?php echo htmlspecialchars($b['ktp_number'] ?? '-'); ?></strong></small>
-                                        <br>
-                                        <a href="<?php echo $ktpPath; ?>" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
-                                            <i class="fas fa-external-link-alt me-1"></i>Buka Foto KTP
-                                        </a>
+                                            <img src="<?php echo $ktpPath; ?>" class="img-thumbnail" style="height: 100px; cursor: pointer;" onclick="openKTPModal(this.src)">
                                         <?php else: ?>
-                                        <div class="alert alert-warning small mb-0">
-                                            <i class="fas fa-exclamation-triangle me-2"></i>
-                                            Foto KTP belum diupload
-                                        </div>
+                                            <div class="alert alert-warning py-2 small"><i class="fas fa-exclamation-triangle me-1"></i>KTP Belum Upload</div>
                                         <?php endif; ?>
                                     </div>
                                 </div>
                                 
-                                <hr>
-                                
-                                <!-- Info Booking -->
-                                <h6 class="text-muted text-uppercase small fw-bold mb-3">
-                                    <i class="fas fa-calendar-check me-2"></i>Detail Pesanan
-                                </h6>
+                                <h6 class="text-muted text-uppercase small fw-bold mb-3 border-top pt-3">Rincian Pembayaran</h6>
                                 <ul class="list-group list-group-flush">
                                     <li class="list-group-item d-flex justify-content-between px-0">
-                                        <span class="text-muted">Lokasi Ambil</span> 
-                                        <strong><?php echo htmlspecialchars($b['pickup_location']); ?></strong>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between px-0">
-                                        <span class="text-muted">Lokasi Kembali</span> 
-                                        <strong><?php echo htmlspecialchars($b['return_location']); ?></strong>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between px-0">
-                                        <span class="text-muted">Periode</span> 
-                                        <strong><?php echo date('d M Y', strtotime($b['start_date'])); ?> - <?php echo date('d M Y', strtotime($b['end_date'])); ?></strong>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between px-0">
-                                        <span class="text-muted">Total Hari</span> 
-                                        <strong><?php echo $b['total_days']; ?> Hari</strong>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between px-0">
-                                        <span class="text-muted">Total Harga</span> 
+                                        <span class="text-muted">Total Harga</span>
                                         <strong class="text-success">Rp <?php echo number_format($b['total_price'], 0, ',', '.'); ?></strong>
                                     </li>
                                     <?php if (!empty($b['notes'])): ?>
@@ -365,7 +336,7 @@ include 'header.php';
     </table>
 </div>
 
-<div class="modal fade" id="editStatusModal" tabindex="-1">
+<div class="modal fade" id="editStatusModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <form method="POST">
@@ -376,11 +347,13 @@ include 'header.php';
                     <h5 class="modal-title">Ubah Status Pesanan</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
+                
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label text-muted">Kode Booking</label>
-                        <input type="text" class="form-control" id="modal_booking_code" readonly>
+                        <input type="text" class="form-control bg-light" id="modal_booking_code" readonly>
                     </div>
+                    
                     <div class="mb-3">
                         <label class="form-label fw-bold">Pilih Status Baru:</label>
                         <div class="status-options">
@@ -389,88 +362,62 @@ include 'header.php';
                                 <label for="st_pending">
                                     <span class="status-icon" style="background: #fff7ed; color: #c2410c;">⏳</span>
                                     <span class="status-label">Menunggu</span>
-                                    <span class="status-desc">Menunggu pembayaran/konfirmasi</span>
+                                    <span class="status-desc">Menunggu konfirmasi</span>
                                 </label>
                             </div>
                             <div class="status-option" onclick="selectStatus('confirmed')">
                                 <input type="radio" name="status" value="confirmed" id="st_confirmed">
                                 <label for="st_confirmed">
-                                    <span class="status-icon" style="background: #eff6ff; color: #1d4ed8;">✓</span>
+                                    <span class="status-icon" style="background: #eff6ff; color: #1d4ed8;">✔️</span>
                                     <span class="status-label">Dikonfirmasi</span>
-                                    <span class="status-desc">Pembayaran diterima</span>
+                                    <span class="status-desc">Booking valid</span>
                                 </label>
                             </div>
                             <div class="status-option" onclick="selectStatus('ready')">
                                 <input type="radio" name="status" value="ready" id="st_ready">
                                 <label for="st_ready">
-                                    <span class="status-icon" style="background: #fef3c7; color: #d97706;">🚗</span>
+                                    <span class="status-icon" style="background: #fef3c7; color: #d97706;">🔑</span>
                                     <span class="status-label">Siap Diambil</span>
-                                    <span class="status-desc">Kendaraan siap untuk pickup</span>
+                                    <span class="status-desc">Unit siap & bersih</span>
                                 </label>
                             </div>
                             <div class="status-option" onclick="selectStatus('active')">
                                 <input type="radio" name="status" value="active" id="st_active">
                                 <label for="st_active">
-                                    <span class="status-icon" style="background: #f0fdf4; color: #15803d;">🔑</span>
+                                    <span class="status-icon" style="background: #f0fdf4; color: #15803d;">🚗</span>
                                     <span class="status-label">Sedang Dipinjam</span>
-                                    <span class="status-desc">Kendaraan sedang dipakai</span>
+                                    <span class="status-desc">Customer bawa unit</span>
                                 </label>
                             </div>
                             <div class="status-option" onclick="selectStatus('completed')">
                                 <input type="radio" name="status" value="completed" id="st_completed">
                                 <label for="st_completed">
-                                    <span class="status-icon" style="background: #f3f4f6; color: #374151;">✅</span>
+                                    <span class="status-icon" style="background: #f3f4f6; color: #374151;">🏁</span>
                                     <span class="status-label">Selesai</span>
-                                    <span class="status-desc">Kendaraan sudah dikembalikan</span>
+                                    <span class="status-desc">Unit kembali & lunas</span>
                                 </label>
                             </div>
                             <div class="status-option" onclick="selectStatus('cancelled')">
                                 <input type="radio" name="status" value="cancelled" id="st_cancelled">
                                 <label for="st_cancelled">
-                                    <span class="status-icon" style="background: #fef2f2; color: #b91c1c;">✕</span>
+                                    <span class="status-icon" style="background: #fef2f2; color: #b91c1c;">❌</span>
                                     <span class="status-label">Dibatalkan</span>
-                                    <span class="status-desc">Pesanan dibatalkan</span>
+                                    <span class="status-desc">Batal sewa</span>
                                 </label>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
+                
+                <div class="modal-footer bg-light">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                    <button type="submit" class="btn btn-primary px-4">Simpan Perubahan</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<script>
-function selectStatus(status) {
-    document.getElementById('st_' + status).checked = true;
-}
-
-function openStatusModal(id, code, currentStatus) {
-    // Isi data ke dalam modal
-    document.getElementById('modal_booking_id').value = id;
-    document.getElementById('modal_booking_code').value = code;
-    
-    // Select current status
-    const radio = document.getElementById('st_' + currentStatus);
-    if (radio) radio.checked = true;
-    
-    // Tampilkan modal
-    var myModal = new bootstrap.Modal(document.getElementById('editStatusModal'));
-    myModal.show();
-}
-
-function openKTPModal(imgSrc) {
-    document.getElementById('ktpFullImage').src = imgSrc;
-    var ktpModal = new bootstrap.Modal(document.getElementById('ktpFullModal'));
-    ktpModal.show();
-}
-</script>
-
-<!-- KTP Fullscreen Modal -->
 <div class="modal fade" id="ktpFullModal" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content bg-dark">
@@ -485,8 +432,56 @@ function openKTPModal(imgSrc) {
     </div>
 </div>
 
-        </div>
-    </main>
-<script src="../../assets/js/bootstrap.bundle.min.js"></script>
+</div> </main> <script src="../../assets/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- FIX: Pindahkan SEMUA Modal ke Body ---
+        
+        // 1. Pindahkan Modal Edit Status
+        var statusModal = document.getElementById('editStatusModal');
+        if (statusModal) { document.body.appendChild(statusModal); }
+
+        // 2. Pindahkan Modal KTP
+        var ktpModal = document.getElementById('ktpFullModal');
+        if (ktpModal) { document.body.appendChild(ktpModal); }
+        
+        // 3. Pindahkan Semua Modal Detail (Loop)
+        // Kita cari semua elemen yang punya ID diawali "detailModal"
+        var detailModals = document.querySelectorAll('[id^="detailModal"]');
+        detailModals.forEach(function(modal) {
+            document.body.appendChild(modal);
+        });
+    });
+
+    // --- FUNGSI MODAL ---
+    function openStatusModal(id, code, currentStatus) {
+        document.getElementById('modal_booking_id').value = id;
+        document.getElementById('modal_booking_code').value = code;
+        
+        // Reset radio buttons
+        var radios = document.getElementsByName('status');
+        for(var i = 0; i < radios.length; i++) { radios[i].checked = false; }
+        
+        // Select current
+        var currentRadio = document.querySelector('input[name="status"][value="' + currentStatus + '"]');
+        if (currentRadio) currentRadio.checked = true;
+        
+        var myModal = new bootstrap.Modal(document.getElementById('editStatusModal'));
+        myModal.show();
+    }
+    
+    function selectStatus(val) {
+        var radio = document.querySelector('input[name="status"][value="' + val + '"]');
+        if(radio) radio.checked = true;
+    }
+
+    function openKTPModal(src) {
+        document.getElementById('ktpFullImage').src = src;
+        var myModal = new bootstrap.Modal(document.getElementById('ktpFullModal'));
+        myModal.show();
+    }
+</script>
+
 </body>
 </html>

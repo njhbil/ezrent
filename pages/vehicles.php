@@ -624,9 +624,13 @@ $mobils = $stmt_mobil->fetchAll(PDO::FETCH_ASSOC);
                             <div class="vehicle-price">
                                 <div class="price">Rp <?php echo number_format($motor['harga_per_hari'], 0, ',', '.'); ?><span>/hari</span></div>
                                 <?php if ($is_logged_in): ?>
-                                <a href="user/booking-process.php?vehicle_id=<?php echo $motor['id']; ?>" class="btn-book">Pesan</a>
+                                    <?php if ($motor['status'] === 'tersedia'): ?>
+                                        <a href="user/booking-process.php?vehicle_id=<?php echo $motor['id']; ?>" class="btn-book">Pesan</a>
+                                    <?php else: ?>
+                                        <a href="#" class="btn-book disabled" aria-disabled="true" title="Kendaraan tidak tersedia">Pesan</a>
+                                    <?php endif; ?>
                                 <?php else: ?>
-                                <a href="login.php?redirect=vehicles" class="btn-book">Login</a>
+                                    <a href="login.php?redirect=vehicles" class="btn-book">Login</a>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -670,9 +674,13 @@ $mobils = $stmt_mobil->fetchAll(PDO::FETCH_ASSOC);
                             <div class="vehicle-price">
                                 <div class="price">Rp <?php echo number_format($mobil['harga_per_hari'], 0, ',', '.'); ?><span>/hari</span></div>
                                 <?php if ($is_logged_in): ?>
-                                <a href="user/booking-process.php?vehicle_id=<?php echo $mobil['id']; ?>" class="btn-book">Pesan</a>
+                                    <?php if ($mobil['status'] === 'tersedia'): ?>
+                                        <a href="user/booking-process.php?vehicle_id=<?php echo $mobil['id']; ?>" class="btn-book">Pesan</a>
+                                    <?php else: ?>
+                                        <a href="#" class="btn-book disabled" aria-disabled="true" title="Kendaraan tidak tersedia">Pesan</a>
+                                    <?php endif; ?>
                                 <?php else: ?>
-                                <a href="login.php?redirect=vehicles" class="btn-book">Login</a>
+                                    <a href="login.php?redirect=vehicles" class="btn-book">Login</a>
                                 <?php endif; ?>
                             </div>
                         </div>

@@ -83,7 +83,22 @@ if ($booking) {
     
     $dayNames = ['Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa', 'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu'];
     $statusInfo = getStatusInfo($booking['status']);
-    $paymentStatus = $booking['status'] === 'cancelled' ? 'refunded' : ($booking['status'] === 'pending' ? 'unpaid' : 'paid');
+    // Prefer explicit payment_status from DB when present; fall back to simple heuristic
+    if (isset($booking['payment_status']) && $booking['payment_status'] !== '') {
+        $ps = $booking['payment_status'];
+        // normalize common values
+        if (in_array($ps, ['paid', 'completed'], true)) {
+            $paymentStatus = 'paid';
+        } elseif ($ps === 'pending') {
+            $paymentStatus = 'pending';
+        } elseif (in_array($ps, ['failed','refunded','expired'], true)) {
+            $paymentStatus = 'refunded';
+        } else {
+            $paymentStatus = $ps;
+        }
+    } else {
+        $paymentStatus = $booking['status'] === 'cancelled' ? 'refunded' : ($booking['status'] === 'pending' ? 'unpaid' : 'paid');
+    }
 }
 ?>
 
@@ -877,7 +892,21 @@ body {
                         <div class="vehicle-showcase">
                             <div class="vehicle-image-wrapper">
                                 <span class="vehicle-type-label"><?php echo getVehicleType($booking['vehicle_type']); ?></span>
-                                <div class="vehicle-silhouette">▣</div>
+                                <?php
+                                // Decode stored images (stored as JSON in vehicles.images)
+                                $images = [];
+                                if (!empty($booking['vehicle_image'])) {
+                                    $decoded = json_decode($booking['vehicle_image'], true);
+                                    if (is_array($decoded)) $images = $decoded;
+                                }
+                                $mainImage = !empty($images) ? $images[0] : 'default-vehicle.jpg';
+                                $candidatePath = __DIR__ . '/../../assets/images/vehicles/' . $mainImage;
+                                $imgSrc = '../../assets/images/vehicles/' . ($mainImage ?? 'default-vehicle.jpg');
+                                if (!file_exists($candidatePath)) {
+                                    $imgSrc = '../../assets/images/vehicles/default-vehicle.jpg';
+                                }
+                                ?>
+                                <img src="<?php echo htmlspecialchars($imgSrc); ?>" alt="<?php echo htmlspecialchars($booking['vehicle_name']); ?>" style="width:100%; height:100%; object-fit:cover; display:block;">
                             </div>
                             <div class="vehicle-info">
                                 <h3><?php echo htmlspecialchars($booking['vehicle_name']); ?></h3>

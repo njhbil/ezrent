@@ -28,6 +28,12 @@ if (!$vehicle) {
     exit;
 }
 
+// Prevent booking if vehicle is not available
+$is_available = isset($vehicle['status']) && $vehicle['status'] === 'tersedia';
+if (!$is_available) {
+    $error = 'Kendaraan ini saat ini tidak tersedia untuk dipesan.';
+}
+
 // Parse images
 $images = json_decode($vehicle['images'], true);
 $image = isset($images[0]) ? $images[0] : 'default.jpg';
@@ -666,9 +672,12 @@ include 'header.php';
                             <span class="amount" id="totalPrice">Rp 0</span>
                         </div>
                         
-                        <button type="submit" class="btn-submit" style="margin-top: 1.5rem;">
-                        Konfirmasi Pemesanan
-                        </button>
+                        <?php if ($is_available): ?>
+                            <button type="submit" form="bookingForm" class="btn-submit" style="margin-top: 1.5rem;">Konfirmasi Pemesanan</button>
+                        <?php else: ?>
+                            <button type="button" class="btn-submit" style="margin-top: 1.5rem; background: #444; cursor: not-allowed;" disabled>Tidak Tersedia</button>
+                            <div style="margin-top:0.75rem;color:#ef4444;font-weight:600;">Kendaraan tidak dapat dipesan karena status saat ini: <?php echo htmlspecialchars($vehicle['status']); ?></div>
+                        <?php endif; ?>
                         
                     </div>
                 </div>

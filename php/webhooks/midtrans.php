@@ -49,6 +49,18 @@ try {
     // Extract booking_id from order_id (format: EZRENT-{booking_id}-{timestamp})
     preg_match('/EZRENT-(\d+)-/', $order_id, $matches);
     $booking_id = isset($matches[1]) ? (int)$matches[1] : 0;
+
+    // Fallback: try to find booking by saved midtrans_order_id or kode_booking
+    if ($booking_id <= 0) {
+        try {
+            $lookup = $pdo->prepare("SELECT id FROM bookings WHERE midtrans_order_id = ? OR kode_booking = ? LIMIT 1");
+            $lookup->execute([$order_id, $order_id]);
+            $found = $lookup->fetchColumn();
+            if ($found) $booking_id = (int)$found;
+        } catch (Exception $e) {
+            file_put_contents($log_file, "Lookup failed: " . $e->getMessage() . "\n", FILE_APPEND);
+        }
+    }
     
     if ($booking_id <= 0) {
         file_put_contents($log_file, "Could not extract booking_id from: $order_id\n", FILE_APPEND);
@@ -102,14 +114,60 @@ try {
     
     $rows_updated = $stmt->rowCount();
     file_put_contents($log_file, "Payment updated: $rows_updated rows\n", FILE_APPEND);
+        // If no payment row existed, insert a new payment record
+        if ($rows_updated === 0) {
+            try {
+                // try to get user_id and booking total
+                $bstmt = $pdo->prepare("SELECT user_id, total_price FROM bookings WHERE id = ?");
+                $bstmt->execute([$booking_id]);
+                $binfo = $bstmt->fetch(PDO::FETCH_ASSOC);
+                $user_id = $binfo['user_id'] ?? null;
+                $amount = $binfo['total_price'] ?? ($gross_amount ?: 0);
+
+                $ins = $pdo->prepare("INSERT INTO payments (booking_id, user_id, payment_method, payment_code, midtrans_order_id, midtrans_transaction_id, amount, status, paid_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CASE WHEN ? = 'completed' THEN NOW() ELSE NULL END, NOW(), NOW())");
+                $ins->execute([$booking_id, $user_id, $payment_type, null, $order_id, $transaction_id, $amount, $payment_status, $payment_status]);
+                file_put_contents($log_file, "Inserted new payment for booking $booking_id\n", FILE_APPEND);
+            } catch (Exception $e) {
+                file_put_contents($log_file, "Failed to insert payment: " . $e->getMessage() . "\n", FILE_APPEND);
+            }
+        }
     
     // Update booking status if needed
     if ($booking_status) {
         $stmt = $pdo->prepare("UPDATE bookings SET status = ?, updated_at = NOW() WHERE id = ?");
         $stmt->execute([$booking_status, $booking_id]);
         file_put_contents($log_file, "Booking status updated to: $booking_status\n", FILE_APPEND);
+        // Also update vehicle availability based on booking status
+        try {
+            $v_status = ($booking_status == 'confirmed' || $booking_status == 'ready' || $booking_status == 'active') ? 'disewa' : 'tersedia';
+            $vidStmt = $pdo->prepare("SELECT vehicle_id FROM bookings WHERE id = ?");
+            $vidStmt->execute([$booking_id]);
+            $vehicle_id = $vidStmt->fetchColumn();
+            if ($vehicle_id) {
+                $upd = $pdo->prepare("UPDATE vehicles SET status = ? WHERE id = ?");
+                $upd->execute([$v_status, $vehicle_id]);
+                file_put_contents($log_file, "Vehicle $vehicle_id status set to: $v_status\n", FILE_APPEND);
+            }
+        } catch (Exception $e) {
+            file_put_contents($log_file, "Failed to update vehicle status: " . $e->getMessage() . "\n", FILE_APPEND);
+        }
     }
     
+
+    // Always update bookings.payment_status so front-end shows correct payment state
+    try {
+        $pay_state = 'unpaid';
+        if ($payment_status === 'completed') $pay_state = 'paid';
+        else if ($payment_status === 'pending') $pay_state = 'pending';
+        else if (in_array($payment_status, ['failed','deny','cancel','expired'])) $pay_state = 'failed';
+        else if ($payment_status === 'refund') $pay_state = 'refunded';
+
+        $pup = $pdo->prepare("UPDATE bookings SET payment_status = ?, updated_at = NOW() WHERE id = ?");
+        $pup->execute([$pay_state, $booking_id]);
+        file_put_contents($log_file, "Booking payment_status set to: $pay_state\n", FILE_APPEND);
+    } catch (Exception $e) {
+        file_put_contents($log_file, "Failed to update booking payment_status: " . $e->getMessage() . "\n", FILE_APPEND);
+    }
     // Return success
     http_response_code(200);
     echo json_encode([

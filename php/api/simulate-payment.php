@@ -1,10 +1,5 @@
 <?php
-/**
- * Payment Simulator - For Testing Only
- * Simulates payment confirmation like a real payment gateway
- * 
- * HAPUS FILE INI DI PRODUCTION!
- */
+
 session_start();
 require_once '../config/database.php';
 
@@ -53,12 +48,20 @@ try {
         ")->execute([$booking_id]);
         
         // Update booking status
-        $pdo->prepare("
-            UPDATE bookings 
-            SET status = 'confirmed',
-                updated_at = NOW()
-            WHERE id = ?
-        ")->execute([$booking_id]);
+            $pdo->prepare("
+                UPDATE bookings 
+                SET status = 'confirmed',
+                    updated_at = NOW()
+                WHERE id = ?
+            ")->execute([$booking_id]);
+
+            // Set vehicle as rented ('disewa')
+            $stmt = $pdo->prepare("SELECT vehicle_id FROM bookings WHERE id = ?");
+            $stmt->execute([$booking_id]);
+            $b = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($b && !empty($b['vehicle_id'])) {
+                $pdo->prepare("UPDATE vehicles SET status = 'disewa', updated_at = NOW() WHERE id = ?")->execute([$b['vehicle_id']]);
+            }
         
         echo json_encode([
             'success' => true,
@@ -77,6 +80,14 @@ try {
             WHERE booking_id = ?
         ")->execute([$booking_id]);
         
+            // Ensure vehicle becomes available again
+            $stmt = $pdo->prepare("SELECT vehicle_id FROM bookings WHERE id = ?");
+            $stmt->execute([$booking_id]);
+            $b = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($b && !empty($b['vehicle_id'])) {
+                $pdo->prepare("UPDATE vehicles SET status = 'tersedia', updated_at = NOW() WHERE id = ?")->execute([$b['vehicle_id']]);
+            }
+
         echo json_encode([
             'success' => true,
             'message' => 'Payment expired',
@@ -99,6 +110,13 @@ try {
                 updated_at = NOW()
             WHERE id = ?
         ")->execute([$booking_id]);
+            // Make vehicle available again
+            $stmt = $pdo->prepare("SELECT vehicle_id FROM bookings WHERE id = ?");
+            $stmt->execute([$booking_id]);
+            $b = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($b && !empty($b['vehicle_id'])) {
+                $pdo->prepare("UPDATE vehicles SET status = 'tersedia', updated_at = NOW() WHERE id = ?")->execute([$b['vehicle_id']]);
+            }
         
         echo json_encode([
             'success' => true,

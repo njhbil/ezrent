@@ -225,7 +225,7 @@ include 'header.php';
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <small class="text-muted">Total Hemat</small>
-                    <h2 class="mb-0 fw-bold text-warning">Rp <?php echo number_format($stats['total_savings']/1000, 0); ?>k</h2>
+                    <h2 class="mb-0 fw-bold text-warning">Rp <?php echo number_format($stats['total_savings'], 0, ',', '.'); ?></h2>
                 </div>
                 <div class="bg-warning bg-opacity-10 p-3 rounded-circle text-warning">
                     <i class="fas fa-coins"></i>
