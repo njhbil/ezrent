@@ -96,6 +96,16 @@ Biasanya ada akun default untuk login ke sistem:
 
 ---
 
+## 🌐 Demo Online
+
+EZRent juga dapat diakses secara online melalui link berikut:
+
+👉 **[https://njhbil.alwaysdata.net](https://njhbil.alwaysdata.net)**
+
+Silakan gunakan link di atas untuk mencoba langsung aplikasi yang telah dihosting.
+
+---
+
 ## 🖼️ Screenshot Tampilan Website
 
 ### Halaman Utama (Homepage)
