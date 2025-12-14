@@ -107,12 +107,11 @@ Biasanya ada akun default untuk login ke sistem:
 ### Detail Properti
 ![Detail Properti](screenshots/property_detail.png)
 
-### Form Tambah Properti (Owner)
-![Tambah Properti](screenshots/add_property.png)
-
 ### Dashboard Admin
 ![Dashboard Admin](screenshots/admin_dashboard.png)
 
+### Dashboard User
+![Dashboard User](screenshots/user_dashboard.png)
 ---
 
 **Catatan:**  
